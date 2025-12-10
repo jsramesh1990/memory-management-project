@@ -1,6 +1,9 @@
-Demonstrate stack, static, and heap memory usage in a real project.
+Memory Management in C – Static, Stack & Dynamic (Heap) Memory
 
-Project Structure
+This project demonstrates how memory works in real C applications by showcasing static memory, stack memory, and dynamic (heap) memory.
+It includes example programs, documentation, and test scripts to help beginners understand how memory allocation works at the system level.
+
+📁 Project Structure
 memory-management-project/
 │
 ├── docs/
@@ -19,8 +22,48 @@ memory-management-project/
 │
 └── LICENSE
 
-✅ 4. Code Examples for Your GitHub
-static_example.c
+📌 What This Project Demonstrates
+✅ Static Memory
+
+Allocated at compile time
+
+Stored in the static region
+
+Lifetime is the entire program
+
+Example:
+
+static int counter = 0;
+
+✅ Stack Memory
+
+Allocated when functions are called
+
+Stores local variables and function frames
+
+Automatically cleaned when function returns
+
+Example:
+
+int number = 10;
+
+✅ Dynamic (Heap) Memory
+
+Allocated at runtime using malloc / calloc / realloc
+
+Size is flexible
+
+Must be manually freed
+
+Example:
+
+int *arr = malloc(n * sizeof(int));
+
+📂 Source Code (src/)
+1. static_example.c
+
+Demonstrates the use of static variables:
+
 #include <stdio.h>
 
 static int counter = 0;   // static memory
@@ -39,9 +82,12 @@ int main() {
 
 
 ✔ Stored in static region
-✔ Value remains across function calls
+✔ Value persists across function calls
 
-dynamic_example.c
+2. dynamic_example.c
+
+Demonstrates heap memory allocation:
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -60,39 +106,32 @@ int main() {
 
 
 ✔ Stored in heap
-✔ Size flexible and runtime controlled
+✔ Size controlled at runtime
 
-🔥 5. Add README for GitHub (Copy-Paste)
+3. mixed_usage.c
 
-Here is your complete README:
+Shows stack + static + heap in a single program.
 
-Memory Management in C – Static vs Dynamic
+▶️ How to Run the Programs
 
-This project demonstrates how memory works in real C projects using stack, static, and heap memory.
+Open terminal inside project root:
 
-Folder Structure
-
-src/ – C programs for memory demonstration
-
-docs/ – Diagrams and explanations
-
-tests/ – Shell script for testing programs
-
-Topics Covered
-
-Static memory (compile-time)
-
-Dynamic memory (runtime)
-
-Stack vs Heap
-
-Real project examples
-
-Correct usage of malloc/free
-
-How to Run
+Static Memory Example
 gcc src/static_example.c -o static
 ./static
 
+Dynamic Memory Example
 gcc src/dynamic_example.c -o dynamic
 ./dynamic
+
+Mixed Memory Usage
+gcc src/mixed_usage.c -o mixed
+./mixed
+
+🧪 Run All Tests Automatically
+cd tests
+./run_tests.sh
+
+📝 License
+
+This project is open-source and released under the MIT License.
