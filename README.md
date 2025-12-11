@@ -110,8 +110,8 @@ int main() {
 }
 
 ```
-✔ Stored in heap
-✔ Size controlled at runtime
+a)    Stored in heap
+b)    Size controlled at runtime
 
 3. mixed_usage.c
 
