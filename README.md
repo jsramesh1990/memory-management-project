@@ -4,7 +4,7 @@
 This project demonstrates how memory works in real C applications by showcasing static memory, stack memory, and dynamic (heap) memory.
 It includes example programs, documentation, and test scripts to help beginners understand how memory allocation works at the system level.
 
-📁 Project Structure
+#    Project Structure
 ```
 memory-management-project/
 │
@@ -86,8 +86,8 @@ int main() {
 }
 ```
 
-✔ Stored in static region
-✔ Value persists across function calls
+a)   Stored in static region
+b)   Value persists across function calls
 
 2. dynamic_example.c
 
