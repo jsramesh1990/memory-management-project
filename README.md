@@ -1,9 +1,11 @@
-Memory Management in C – Static, Stack & Dynamic (Heap) Memory
+##    Memory Management in C
+– Static, Stack & Dynamic (Heap) Memory
 
 This project demonstrates how memory works in real C applications by showcasing static memory, stack memory, and dynamic (heap) memory.
 It includes example programs, documentation, and test scripts to help beginners understand how memory allocation works at the system level.
 
 📁 Project Structure
+```
 memory-management-project/
 │
 ├── docs/
@@ -21,9 +23,10 @@ memory-management-project/
 │   ├── run_tests.sh
 │
 └── LICENSE
+```
 
-📌 What This Project Demonstrates
-✅ Static Memory
+#    What This Project Demonstrates
+#    Static Memory
 
 Allocated at compile time
 
@@ -32,10 +35,11 @@ Stored in the static region
 Lifetime is the entire program
 
 Example:
-
+```
 static int counter = 0;
+```
 
-✅ Stack Memory
+#    Stack Memory
 
 Allocated when functions are called
 
@@ -47,7 +51,7 @@ Example:
 
 int number = 10;
 
-✅ Dynamic (Heap) Memory
+#    Dynamic (Heap) Memory
 
 Allocated at runtime using malloc / calloc / realloc
 
@@ -59,7 +63,7 @@ Example:
 
 int *arr = malloc(n * sizeof(int));
 
-📂 Source Code (src/)
+#    Source Code (src/)
 1. static_example.c
 
 Demonstrates the use of static variables:
