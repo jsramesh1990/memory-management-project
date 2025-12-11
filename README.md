@@ -48,9 +48,9 @@ Stores local variables and function frames
 Automatically cleaned when function returns
 
 Example:
-
+```
 int number = 10;
-
+```
 #    Dynamic (Heap) Memory
 
 Allocated at runtime using malloc / calloc / realloc
@@ -60,14 +60,15 @@ Size is flexible
 Must be manually freed
 
 Example:
-
+```
 int *arr = malloc(n * sizeof(int));
+```
 
 #    Source Code (src/)
 1. static_example.c
 
 Demonstrates the use of static variables:
-
+```
 #include <stdio.h>
 
 static int counter = 0;   // static memory
@@ -83,7 +84,7 @@ int main() {
     increase();
     return 0;
 }
-
+```
 
 ✔ Stored in static region
 ✔ Value persists across function calls
@@ -91,7 +92,7 @@ int main() {
 2. dynamic_example.c
 
 Demonstrates heap memory allocation:
-
+```
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -108,7 +109,7 @@ int main() {
     return 0;
 }
 
-
+```
 ✔ Stored in heap
 ✔ Size controlled at runtime
 
@@ -116,26 +117,34 @@ int main() {
 
 Shows stack + static + heap in a single program.
 
-▶️ How to Run the Programs
+##    How to Run the Programs
 
 Open terminal inside project root:
 
-Static Memory Example
+#    Static Memory Example
+```
 gcc src/static_example.c -o static
 ./static
+```
 
-Dynamic Memory Example
+#    Dynamic Memory Example
+```
 gcc src/dynamic_example.c -o dynamic
 ./dynamic
+```
 
-Mixed Memory Usage
+#    Mixed Memory Usage
+```
 gcc src/mixed_usage.c -o mixed
 ./mixed
+```
 
-🧪 Run All Tests Automatically
+#    Run All Tests Automatically
+```
 cd tests
 ./run_tests.sh
+```
 
-📝 License
+#    License
 
 This project is open-source and released under the MIT License.
