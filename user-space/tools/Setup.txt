@@ -1,0 +1,30 @@
+# Create the tool files
+cd ~/Projects/RK3568-DDR-Memory/user-space/tools/
+
+# Create files
+cat > ddr_info_tool.c << 'EOF'
+[Paste ddr_info_tool.c content]
+EOF
+
+cat > ddr_monitor.c << 'EOF'
+[Paste ddr_monitor.c content]
+EOF
+
+cat > memory_benchmark.c << 'EOF'
+[Paste memory_benchmark.c content]
+EOF
+
+# Build tools
+gcc -o ddr_info_tool ddr_info_tool.c -lddr_manager -lm
+gcc -o ddr_monitor ddr_monitor.c -lddr_manager -lncurses -lm
+gcc -o memory_benchmark memory_benchmark.c -lddr_manager -lm -lpthread
+
+# Test tools
+./ddr_info_tool --help
+./ddr_monitor --help
+./memory_benchmark --help
+
+# Run tools
+./ddr_info_tool --info --stats
+./ddr_monitor --verbose --interval 2
+./memory_benchmark --all --size 1M

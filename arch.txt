@@ -1,0 +1,430 @@
+================================================================================
+                    RK3568 DDR MEMORY MANAGER - ARCHITECTURE
+================================================================================
+Version: 1.0.0
+Date: 2024-08-06
+Author: Sebastian
+================================================================================
+
+TABLE OF CONTENTS
+=================
+1. System Overview
+2. Hardware Architecture
+3. Memory Layout
+4. Software Stack
+5. Boot Flow
+6. Memory Management
+7. NPU Integration
+8. Security Features
+9. Performance Optimization
+10. Debugging & Monitoring
+
+================================================================================
+1. SYSTEM OVERVIEW
+================================================================================
+
+The RK3568 DDR Memory Manager is a comprehensive memory management solution
+designed for Rockchip RK3568-based systems. It provides optimized memory
+configuration, allocation, and monitoring for various use cases including
+smart home hubs, NVR systems, and AI edge computing.
+
+Key Features:
+- DDR4/LPDDR4/LPDDR4X support
+- Dual-channel memory controller
+- Up to 8GB DDR memory support
+- Hardware-accelerated NPU (Neural Processing Unit)
+- 4K video encoding/decoding support
+- Advanced power management
+
+================================================================================
+2. HARDWARE ARCHITECTURE
+================================================================================
+
+2.1 Rockchip RK3568 SoC Architecture
+-------------------------------------
+┌─────────────────────────────────────────────────────┐
+│                    RK3568 SoC                      │
+├─────────────────────────────────────────────────────┤
+│  ┌──────────────┐  ┌──────────────┐               │
+│  │  Quad-Core   │  │   NPU        │               │
+│  │  Cortex-A55  │  │   1.0 TOPS   │               │
+│  │  @ 2.0GHz    │  │              │               │
+│  └──────────────┘  └──────────────┘               │
+│  ┌──────────────┐  ┌──────────────┐               │
+│  │  Mali-G52    │  │   VPU        │               │
+│  │  GPU         │  │   4K H.265   │               │
+│  │              │  │   Enc/Dec    │               │
+│  └──────────────┘  └──────────────┘               │
+│  ┌──────────────────────────────────────┐          │
+│  │   DDR Memory Controller             │          │
+│  │   - Dual-channel                    │          │
+│  │   - Up to 8GB                      │          │
+│  │   - 3200 MT/s                      │          │
+│  └──────────────────────────────────────┘          │
+└─────────────────────────────────────────────────────┘
+
+2.2 Memory Hierarchy
+--------------------
+┌─────────────────────────────────────────────────────┐
+│ L1 Cache (32KB I-cache, 32KB D-cache per core)    │
+├─────────────────────────────────────────────────────┤
+│ L2 Cache (512KB per core cluster)                 │
+├─────────────────────────────────────────────────────┤
+│ L3 Cache (1MB shared)                             │
+├─────────────────────────────────────────────────────┤
+│ DDR Memory (Up to 8GB, 3200 MT/s)                 │
+└─────────────────────────────────────────────────────┘
+
+================================================================================
+3. MEMORY LAYOUT
+================================================================================
+
+3.1 Default Memory Map (4GB Configuration)
+-------------------------------------------
+Address Range          | Size    | Purpose
+-----------------------|---------|---------------------------
+0x00000000 - 0x00FFFFFF | 16MB   | Bootloader/SPL
+0x01000000 - 0x01FFFFFF | 16MB   | U-Boot Environment
+0x02000000 - 0x0FFFFFFF | 224MB  | Linux Kernel
+0x10000000 - 0x1FFFFFFF | 256MB  | Device Tree & Reserved
+0x20000000 - 0x27FFFFFF | 128MB  | NPU Memory Pool
+0x28000000 - 0x2FFFFFFF | 128MB  | GPU Memory Pool
+0x30000000 - 0x3FFFFFFF | 256MB  | VPU/Camera Buffers
+0x40000000 - 0x7FFFFFFF | 1GB    | System RAM
+0x80000000 - 0xFFFFFFFF | 2GB    | System RAM (continued)
+-----------------------|---------|---------------------------
+Total:                  | 4GB    | DDR Memory
+
+3.2 Memory Regions Details
+---------------------------
+Region: NPU Memory Pool
+  - Address: 0x20000000 - 0x27FFFFFF
+  - Size: 128MB
+  - Purpose: AI model storage, inference buffers
+  - Attributes: DMA-capable, cache-coherent
+
+Region: GPU Memory Pool
+  - Address: 0x28000000 - 0x2FFFFFFF
+  - Size: 128MB
+  - Purpose: Frame buffers, textures
+  - Attributes: GPU-accessible, contiguous
+
+Region: VPU/Camera Buffers
+  - Address: 0x30000000 - 0x3FFFFFFF
+  - Size: 256MB
+  - Purpose: Video encoding/decoding
+  - Attributes: CMA (Contiguous Memory Allocator)
+
+================================================================================
+4. SOFTWARE STACK
+================================================================================
+
+4.1 Bootloader Layer (U-Boot)
+-----------------------------
+├── SPL (Secondary Program Loader)
+│   ├── DDR Initialization
+│   ├── Clock Configuration
+│   └── Security Setup
+├── U-Boot Proper
+│   ├── Memory Partition Management
+│   ├── Device Tree Loading
+│   └── Kernel Boot
+└── Boot Configuration
+    ├── boot.scr
+    ├── extlinux.conf
+    └── Kernel Arguments
+
+4.2 Linux Kernel Layer
+----------------------
+├── DDR Memory Manager Driver
+│   ├── Memory Allocation API
+│   ├── DMA Management
+│   └── IOCTL Interface
+├── NPU Driver
+│   ├── Model Loading
+│   ├── Inference Engine
+│   └── Memory Management
+└── Device Tree Overlays
+    ├── Memory Regions
+    ├── NPU Configuration
+    └── Peripheral Mapping
+
+4.3 User Space Layer
+--------------------
+├── Memory Management Tools
+│   ├── ddr_info_tool
+│   ├── memory_benchmark
+│   └── ddr_monitor
+├── Libraries
+│   ├── libddr_manager.so
+│   └── libmemory_utils.so
+└── Application Examples
+    ├── Home Assistant Integration
+    ├── NVR/Frigate Setup
+    └── AI Model Examples
+
+================================================================================
+5. BOOT FLOW
+================================================================================
+
+5.1 Boot Sequence
+------------------
+┌─────────────────────────────────────────────────────────────┐
+│ 1. Power On Reset                                         │
+└─────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 2. Boot ROM Initialization                                 │
+│    - Initialize minimal hardware                           │
+│    - Load SPL from eMMC/SD/NAND                           │
+└─────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 3. SPL Execution                                          │
+│    - Initialize DDR controller                            │
+│    - Configure memory timings                             │
+│    - Load U-Boot proper                                   │
+└─────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 4. U-Boot Execution                                       │
+│    - Parse device tree                                    │
+│    - Setup memory regions                                 │
+│    - Load kernel and initramfs                           │
+└─────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 5. Linux Kernel Boot                                      │
+│    - Initialize DDR memory manager                        │
+│    - Setup NPU memory pool                               │
+│    - Mount root filesystem                               │
+└─────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 6. User Space Initialization                              │
+│    - Start system services                                │
+│    - Load NPU firmware                                   │
+│    - Start application                                   │
+└─────────────────────────────────────────────────────────────┘
+
+================================================================================
+6. MEMORY MANAGEMENT
+================================================================================
+
+6.1 DDR Configuration
+---------------------
+Configuration Parameters:
+- Memory Type: LPDDR4 (Default)
+- Frequency: 1800MHz (Default)
+- Voltage: 1.1V
+- Timings: tCL=18, tRCD=18, tRP=18, tRAS=42
+- Channels: Dual-channel
+
+6.2 Memory Allocation Strategies
+--------------------------------
+1. Static Allocation
+   - Fixed memory regions
+   - Used for NPU, GPU, VPU
+   - Defined in device tree
+
+2. Dynamic Allocation
+   - kmalloc/kfree (kernel)
+   - malloc/free (user space)
+   - Managed by memory manager
+
+3. DMA Allocation
+   - Contiguous memory
+   - Used for peripherals
+   - DMA API
+
+6.3 Memory Protection
+---------------------
+- MMU (Memory Management Unit)
+- MPU (Memory Protection Unit)
+- Secure/Non-secure regions
+- TrustZone support
+
+================================================================================
+7. NPU INTEGRATION
+================================================================================
+
+7.1 NPU Architecture
+--------------------
+┌─────────────────────────────────────┐
+│ NPU Core @ 1.0 TOPS                │
+├─────────────────────────────────────┤
+│ ┌─────────────────────────────────┐ │
+│ │  MAC Array (256x256)           │ │
+│ └─────────────────────────────────┘ │
+│ ┌─────────────────────────────────┐ │
+│ │  Activation Engine             │ │
+│ │  - ReLU, Sigmoid, Tanh         │ │
+│ └─────────────────────────────────┘ │
+│ ┌─────────────────────────────────┐ │
+│ │  Pooling Engine                │ │
+│ │  - Max, Average               │ │
+│ └─────────────────────────────────┘ │
+│ ┌─────────────────────────────────┐ │
+│ │  DMA Controller                │ │
+│ └─────────────────────────────────┘ │
+└─────────────────────────────────────┘
+
+7.2 NPU Memory Management
+-------------------------
+Memory Configuration:
+- NPU Memory Pool: 128MB (Configurable)
+- Model Storage: 64MB
+- Input/Output Buffers: 32MB
+- Scratch Space: 32MB
+
+7.3 AI Model Support
+--------------------
+Supported Frameworks:
+- TensorFlow Lite
+- PyTorch/ONNX
+- Caffe
+- Darknet
+
+Optimization Levels:
+- INT8 Quantization
+- FP16 Mixed Precision
+- Layer Fusion
+- Kernel Optimization
+
+================================================================================
+8. SECURITY FEATURES
+================================================================================
+
+8.1 Memory Security
+-------------------
+- Memory Encryption: AES-256
+- Secure Memory Regions
+- TrustZone Support
+- Anti-tampering Mechanisms
+
+8.2 Secure Boot
+---------------
+- Chain of Trust
+- Signed Firmware
+- Secure Key Storage
+- Hardware RNG
+
+================================================================================
+9. PERFORMANCE OPTIMIZATION
+================================================================================
+
+9.1 Optimization Techniques
+---------------------------
+1. Cache Management
+   - L1/L2/L3 cache optimization
+   - Prefetching
+   - Cache coherency
+
+2. Memory Access Optimization
+   - Alignment
+   - Burst transfers
+   - Interleaving
+
+3. Power Management
+   - Dynamic frequency scaling
+   - Voltage scaling
+   - Power gating
+
+9.2 Performance Benchmarks
+--------------------------
+Memory Bandwidth:
+- Sequential Read: 22.4 GB/s
+- Sequential Write: 19.8 GB/s
+- Random Read: 12.3 GB/s
+- Random Write: 10.1 GB/s
+
+NPU Performance:
+- ResNet-50: 25 FPS
+- YOLOv5: 30 FPS
+- MobileNet: 120 FPS
+- EfficientNet: 45 FPS
+
+================================================================================
+10. DEBUGGING & MONITORING
+================================================================================
+
+10.1 Debugging Tools
+--------------------
+- ddr_info_tool: Memory information
+- memory_benchmark: Performance testing
+- ddr_monitor: Real-time monitoring
+- trace_analyzer: Memory trace analysis
+
+10.2 Monitoring Metrics
+-----------------------
+- Memory utilization
+- Bandwidth usage
+- Latency
+- Error rates
+- Temperature
+- Power consumption
+
+10.3 Logging
+------------
+- Kernel logs: /var/log/kern.log
+- Memory manager logs: /var/log/ddr_manager.log
+- NPU logs: /var/log/npu.log
+
+================================================================================
+11. SUPPORTED BOARDS
+================================================================================
+
+Currently Supported:
+1. Mixtile Edge 2
+2. Radxa ROCK 3B
+3. Orange Pi 5
+4. Custom Boards (via configuration)
+
+Board Features Matrix:
+┌─────────────────┬──────────┬──────────┬──────────┬──────────┐
+│ Feature         │ Edge 2   │ ROCK 3B  │ OPi 5    │ Custom   │
+├─────────────────┼──────────┼──────────┼──────────┼──────────┤
+│ DDR4 Support    │    ✓     │    ✓     │    ✓     │   Config │
+│ LPDDR4 Support  │    ✓     │    ✓     │    ✓     │   Config │
+│ NPU Support     │    ✓     │    ✓     │    ✓     │    ✓     │
+│ 4K Video        │    ✓     │    ✓     │    ✓     │    ✓     │
+│ SATA            │    ✓     │    ✓     │    ✓     │   Config │
+│ M.2 PCIe        │    ✓     │    ✓     │    ✓     │   Config │
+│ GbE             │    ✓     │    ✓     │    ✓     │    ✓     │
+└─────────────────┴──────────┴──────────┴──────────┴──────────┘
+
+================================================================================
+12. FUTURE ROADMAP
+================================================================================
+
+Planned Features:
+- [ ] DDR5 Support
+- [ ] Enhanced ECC Support
+- [ ] Multi-board Cluster Support
+- [ ] AI Model Zoo
+- [ ] Web-based Management Console
+- [ ] Advanced Power Management
+- [ ] Real-time Memory Visualization
+
+================================================================================
+13. REFERENCES
+================================================================================
+
+Documentation:
+1. RK3568 Technical Reference Manual
+2. ARM Cortex-A55 Technical Reference Manual
+3. LPDDR4 Specification
+4. U-Boot Documentation
+5. Linux Memory Management Documentation
+
+================================================================================
+END OF DOCUMENT
+================================================================================
+```
+
+

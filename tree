@@ -1,0 +1,185 @@
+RK3568-DDR-Memory-Manager/
+│
+├── 📄 README.md                          # Main project documentation
+├── 📄 CONTRIBUTING.md                    # Contribution guidelines
+├── 📄 LICENSE                            # License file (MIT/GPL)
+├── 📄 CHANGELOG.md                       # Version history
+├── 📄 ROADMAP.md                         # Future development plans
+│
+├── 📁 docs/                              # Comprehensive documentation
+│   ├── 📁 architecture/
+│   │   ├── ddr_architecture.md           # DDR architecture overview
+│   │   ├── memory_mapping.md             # Detailed memory mapping
+│   │   └── boot_flow.md                  # Boot initialization flow
+│   ├── 📁 guides/
+│   │   ├── getting_started.md            # Quick start guide
+│   │   ├── installation_guide.md         # Step-by-step setup
+│   │   ├── customization_guide.md        # How to customize for your board
+│   │   └── troubleshooting.md            # Common issues and solutions
+│   ├── 📁 api/
+│   │   ├── ddr_config_api.md             # DDR configuration API docs
+│   │   ├── partition_api.md              # Partition management API
+│   │   └── memory_debug_api.md           # Debugging tools API
+│   └── 📁 examples/
+│       ├── basic_config_example.c        # Simple DDR configuration
+│       ├── npu_memory_setup.c            # NPU memory allocation
+│       └── custom_partition_example.c    # Custom memory partitioning
+│
+├── 📁 src/                               # Source code
+│   ├── 📁 bootloader/
+│   │   ├── 📁 ddr_config/
+│   │   │   ├── board_memory.c            # Board-specific memory config
+│   │   │   ├── ddr_layout.c              # DDR layout management
+│   │   │   ├── ddr_layout.h              # Header file
+│   │   │   ├── memory_table.h            # Memory table definitions
+│   │   │   └── ddr_config.h              # Main config header
+│   │   └── 📁 uboot-ddr-init/
+│   │       ├── ddr_partition.c           # Partition management
+│   │       ├── ddr_partition.h           # Partition header
+│   │       ├── ddr_print.c               # Debug printing functions
+│   │       ├── ddr_print.h               # Print header
+│   │       ├── ddr_init.c                # Main initialization
+│   │       ├── ddr_init.h                # Init header
+│   │       └── Makefile                  # Build file
+│   │
+│   ├── 📁 kernel/
+│   │   ├── 📁 drivers/
+│   │   │   ├── 📁 ddr_driver/
+│   │   │   │   ├── ddr_driver.c          # Kernel driver
+│   │   │   │   ├── ddr_driver.h
+│   │   │   │   └── ddr_ioctl.h           # IOCTL definitions
+│   │   │   └── 📁 memory_allocator/
+│   │   │       ├── dma_allocator.c       # DMA memory management
+│   │   │       └── pool_manager.c        # Memory pool management
+│   │   ├── 📁 patches/
+│   │   │   ├── 0001-ddr-optimization.patch
+│   │   │   └── 0002-npu-memory-fix.patch
+│   │   └── ddr_kernel_module.c           # Main kernel module
+│   │
+│   ├── 📁 user-space/
+│   │   ├── 📁 tools/
+│   │   │   ├── ddr_info_tool.c           # Information display tool
+│   │   │   ├── memory_benchmark.c        # Performance testing
+│   │   │   └── ddr_monitor.c             # Real-time monitoring
+│   │   ├── 📁 libraries/
+│   │   │   ├── libddr_manager/
+│   │   │   │   ├── ddr_manager.c         # Library implementation
+│   │   │   │   ├── ddr_manager.h
+│   │   │   │   └── Makefile
+│   │   │   └── libmemory_utils/
+│   │   │       ├── memory_utils.c        # Utility functions
+│   │   │       └── memory_utils.h
+│   │   └── 📁 examples/
+│   │       ├── simple_alloc_example.c    # Memory allocation example
+│   │       ├── npu_inference_example.c   # NPU memory usage
+│   │       └── multi_camera_example.c    # NVR memory management
+│   │
+│   └── 📁 scripts/
+│       ├── 📁 build/
+│       │   ├── build.sh                  # Main build script
+│       │   ├── clean.sh                  # Clean build artifacts
+│       │   └── cross_compile.sh          # Cross-compilation setup
+│       ├── 📁 test/
+│       │   ├── test_ddr_config.sh        # Configuration tests
+│       │   ├── test_memory_limits.sh     # Memory limit testing
+│       │   └── run_benchmarks.sh         # Performance benchmarks
+│       ├── 📁 deployment/
+│       │   ├── install.sh                # Installation script
+│       │   ├── flash.sh                  # Flashing utility
+│       │   └── update.sh                 # Update script
+│       └── 📁 automation/
+│           ├── auto_config.py            # Python config generator
+│           ├── memory_analyzer.py        # Memory usage analyzer
+│           └── device_tree_gen.py        # Device tree generator
+│
+├── 📁 configs/                           # Configuration files
+│   ├── 📁 board_defconfigs/
+│   │   ├── mixtile_edge2_defconfig       # Mixtile Edge 2 config
+│   │   ├── radxa_rock3b_defconfig        # Radxa ROCK 3B config
+│   │   ├── orange_pi_5_defconfig         # Orange Pi 5 config
+│   │   └── custom_board_defconfig        # Template for custom boards
+│   ├── 📁 device_trees/
+│   │   ├── rk3568-mixtile-edge2.dts      # Device tree source
+│   │   ├── rk3568-radxa-rock3b.dts
+│   │   └── rk3568-custom.dts
+│   └── 📁 memory_profiles/
+│       ├── home_assistant_profile.json   # HA optimized settings
+│       ├── nvr_profile.json              # NVR optimized settings
+│       ├── ai_edge_profile.json          # AI optimized settings
+│       └── performance_profile.json      # Maximum performance
+│
+├── 📁 tests/                             # Testing framework
+│   ├── 📁 unit_tests/
+│   │   ├── test_ddr_layout.c             # Unit tests
+│   │   ├── test_memory_alloc.c
+│   │   └── test_partition.c
+│   ├── 📁 integration_tests/
+│   │   ├── test_full_boot.sh             # Boot cycle tests
+│   │   └── test_memory_stress.sh         # Stress testing
+│   └── 📁 performance/
+│       ├── benchmark_results.md          # Performance metrics
+│       └── compare_configs.py            # Configuration comparison
+│
+├── 📁 tools/                             # Development tools
+│   ├── 📁 debug/
+│   │   ├── ddr_debugger.py               # Python debugger
+│   │   ├── memory_visualizer.py          # Memory map visualization
+│   │   └── trace_analyzer.py             # Trace analysis
+│   ├── 📁 profiling/
+│   │   ├── memory_profiler.py            # Profiling tool
+│   │   └── bandwidth_test.c              # Bandwidth testing
+│   └── 📁 utilities/
+│       ├── ddr_config_editor.py          # GUI config editor
+│       └── dts_validator.py              # Device tree validator
+│
+├── 📁 firmware/                          # Firmware images
+│   ├── 📁 releases/
+│   │   ├── v1.0.0/
+│   │   │   ├── bootloader.bin
+│   │   │   ├── kernel.img
+│   │   │   └── rootfs.img
+│   │   └── latest/ -> v1.0.0/
+│   └── 📁 prebuilt/
+│       ├── idbloader.img
+│       ├── uboot.img
+│       └── trust.img
+│
+├── 📁 docker/                            # Docker support
+│   ├── Dockerfile.dev                    # Development environment
+│   ├── Dockerfile.build                  # Build environment
+│   ├── docker-compose.yml                # Multi-container setup
+│   └── 📁 scripts/
+│       ├── enter_container.sh            # Enter dev container
+│       └── build_in_container.sh         # Build inside container
+│
+├── 📁 .github/                           # GitHub CI/CD
+│   ├── workflows/
+│   │   ├── build.yml                     # Build workflow
+│   │   ├── test.yml                      # Test workflow
+│   │   ├── release.yml                   # Release workflow
+│   │   └── docs.yml                      # Documentation build
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug_report.md
+│   │   └── feature_request.md
+│   └── PULL_REQUEST_TEMPLATE.md
+│
+├── 📁 examples/                          # Use case examples
+│   ├── 📁 home_assistant/
+│   │   ├── README.md                     # HA setup guide
+│   │   ├── config_example.yaml           # HA config example
+│   │   └── npu_integration.md            # NPU with HA
+│   ├── 📁 nvr_setup/
+│   │   ├── frigate_config.yml            # Frigate NVR config
+│   │   ├── camera_config.json            # Camera setup
+│   │   └── motion_detection.md           # AI motion detection
+│   └── 📁 ai_models/
+│       ├── yolov5_conversion.py          # YOLOv5 to RKNN
+│       ├── efficientnet_conversion.py    # EfficientNet conversion
+│       └── model_optimization.md         # Optimization guide
+│
+├── 📁 scripts/
+│   └── (existing scripts from your structure)
+│
+├── 📄 arch.txt                           # Architecture documentation
+├── 📄 structure.txt                      # Original structure description
+└── 📄 tree                               # Directory tree

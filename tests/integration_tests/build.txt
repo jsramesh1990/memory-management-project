@@ -1,0 +1,18 @@
+# Create the integration test files
+cd ~/Projects/RK3568-DDR-Memory/tests/integration_tests/
+
+# Create files
+cat > test_full_boot.sh << 'EOF'
+[Paste test_full_boot.sh content]
+EOF
+
+cat > test_memory_stress.sh << 'EOF'
+[Paste test_memory_stress.sh content]
+EOF
+
+# Make scripts executable
+chmod +x test_full_boot.sh test_memory_stress.sh
+
+# Test the scripts
+./test_full_boot.sh --help
+./test_memory_stress.sh --help

@@ -1,0 +1,29 @@
+# Create the build scripts
+cd ~/Projects/RK3568-DDR-Memory/scripts/build/
+
+# Create files
+cat > build.sh << 'EOF'
+[Paste build.sh content]
+EOF
+
+cat > clean.sh << 'EOF'
+[Paste clean.sh content]
+EOF
+
+cat > cross_compile.sh << 'EOF'
+[Paste cross_compile.sh content]
+EOF
+
+# Make scripts executable
+chmod +x build.sh clean.sh cross_compile.sh
+
+# Test scripts
+./build.sh --help
+./clean.sh --help
+./cross_compile.sh --help
+
+# Build the project
+./build.sh --board edge2 --type release --profile balanced
+
+# Clean the project
+./clean.sh --all

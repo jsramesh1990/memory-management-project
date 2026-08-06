@@ -1,0 +1,77 @@
+# Create the memory utilities library files
+cd ~/Projects/RK3568-DDR-Memory/user-space/libraries/libmemory_utils/
+
+# Create files
+cat > memory_utils.h << 'EOF'
+[Paste memory_utils.h content]
+EOF
+
+cat > memory_utils.c << 'EOF'
+[Paste memory_utils.c content]
+EOF
+
+# Create Makefile
+cat > Makefile << 'EOF'
+# Makefile for Memory Utilities Library
+
+CC = gcc
+CFLAGS = -Wall -Wextra -O2 -fPIC
+LDFLAGS = -shared -Wl,-soname,libmemory_utils.so.1
+INCLUDES = -I.
+
+SRCS = memory_utils.c
+OBJS = $(SRCS:.c=.o)
+
+LIBRARY = libmemory_utils.so
+LIBRARY_VERSION = $(LIBRARY).1.0.0
+
+all: $(LIBRARY_VERSION)
+	ln -sf $(LIBRARY_VERSION) $(LIBRARY).1
+	ln -sf $(LIBRARY).1 $(LIBRARY)
+
+%.o: %.c memory_utils.h
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(LIBRARY_VERSION): $(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS)
+
+clean:
+	rm -f $(OBJS) $(LIBRARY)*
+
+install:
+	install -d $(DESTDIR)/usr/local/lib
+	install -m 755 $(LIBRARY_VERSION) $(DESTDIR)/usr/local/lib/
+	ln -sf $(LIBRARY_VERSION) $(DESTDIR)/usr/local/lib/$(LIBRARY).1
+	ln -sf $(LIBRARY).1 $(DESTDIR)/usr/local/lib/$(LIBRARY)
+	install -d $(DESTDIR)/usr/local/include
+	install -m 644 memory_utils.h $(DESTDIR)/usr/local/include/
+
+uninstall:
+	rm -f $(DESTDIR)/usr/local/lib/$(LIBRARY)*
+	rm -f $(DESTDIR)/usr/local/include/memory_utils.h
+
+.PHONY: all clean install uninstall
+EOF
+
+# Build the library
+make all
+
+# Install the library
+sudo make install
+
+# Test with a simple program
+cat > test.c << 'EOF'
+#include <stdio.h>
+#include <memory_utils.h>
+
+int main() {
+    memory_utils_init(NULL);
+    memory_utils_log_info("Memory utilities test");
+    printf("Memory utilities initialized!\n");
+    memory_utils_cleanup();
+    return 0;
+}
+EOF
+
+gcc -o test test.c -lmemory_utils
+./test

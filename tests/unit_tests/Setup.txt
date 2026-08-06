@@ -1,0 +1,31 @@
+# Create the unit test files
+cd ~/Projects/RK3568-DDR-Memory/tests/unit_tests/
+
+# Create files
+cat > test_ddr_layout.c << 'EOF'
+[Paste test_ddr_layout.c content]
+EOF
+
+cat > test_memory_alloc.c << 'EOF'
+[Paste test_memory_alloc.c content]
+EOF
+
+cat > test_partition.c << 'EOF'
+[Paste test_partition.c content]
+EOF
+
+# Build the tests
+gcc -o test_ddr_layout test_ddr_layout.c -lunity -lddr_manager
+gcc -o test_memory_alloc test_memory_alloc.c -lunity -lddr_manager
+gcc -o test_partition test_partition.c -lunity -lddr_manager
+
+# Run the tests
+./test_ddr_layout --help
+./test_ddr_layout
+./test_memory_alloc
+./test_partition
+
+# Run specific test
+./test_ddr_layout --test test_layout_init
+./test_memory_alloc --test test_basic_allocation --verbose
+./test_partition --test test_partition_add

@@ -1,0 +1,34 @@
+# Create the U-Boot DDR init files
+cd ~/Projects/RK3568-DDR-Memory/src/uboot-ddr-init/
+
+# Create files
+cat > ddr_init.h << 'EOF'
+[Paste ddr_init.h content]
+EOF
+
+cat > ddr_init.c << 'EOF'
+[Paste ddr_init.c content]
+EOF
+
+cat > ddr_partition.h << 'EOF'
+[Paste ddr_partition.h content]
+EOF
+
+cat > ddr_partition.c << 'EOF'
+[Paste ddr_partition.c content]
+EOF
+
+cat > ddr_print.h << 'EOF'
+[Paste ddr_print.h content]
+EOF
+
+cat > ddr_print.c << 'EOF'
+[Paste ddr_print.c content]
+EOF
+
+cat > Makefile << 'EOF'
+[Paste Makefile content]
+EOF
+
+# Verify files
+ls -la

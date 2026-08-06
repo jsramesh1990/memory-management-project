@@ -1,0 +1,33 @@
+# Create the library files
+cd ~/Projects/RK3568-DDR-Memory/user-space/libraries/libddr_manager/
+
+# Create files
+cat > ddr_manager.h << 'EOF'
+[Paste ddr_manager.h content]
+EOF
+
+cat > ddr_manager.c << 'EOF'
+[Paste ddr_manager.c content]
+EOF
+
+cat > Makefile << 'EOF'
+[Paste Makefile content]
+EOF
+
+# Build the library
+make all
+
+# Build with debug
+make DEBUG=1
+
+# Install the library
+sudo make install
+
+# Test the library
+make test
+
+# Clean build
+make clean
+
+# Generate documentation
+make docs

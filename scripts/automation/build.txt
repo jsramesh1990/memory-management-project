@@ -1,0 +1,26 @@
+# Create the automation scripts
+cd ~/Projects/RK3568-DDR-Memory/scripts/automation/
+
+# Create files
+cat > auto_config.py << 'EOF'
+[Paste auto_config.py content]
+EOF
+
+cat > device_tree_gen.py << 'EOF'
+[Paste device_tree_gen.py content]
+EOF
+
+cat > memory_analyzer.py << 'EOF'
+[Paste memory_analyzer.py content]
+EOF
+
+# Make scripts executable
+chmod +x auto_config.py device_tree_gen.py memory_analyzer.py
+
+# Install dependencies
+pip install pyyaml json5 click psutil pandas matplotlib numpy
+
+# Test scripts
+python3 auto_config.py --help
+python3 device_tree_gen.py --help
+python3 memory_analyzer.py --help

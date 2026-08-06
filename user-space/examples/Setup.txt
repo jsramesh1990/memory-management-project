@@ -1,0 +1,25 @@
+# Create the user-space example files
+cd ~/Projects/RK3568-DDR-Memory/user-space/examples/
+
+# Create files
+cat > simple_alloc_example.c << 'EOF'
+[Paste simple_alloc_example.c content]
+EOF
+
+cat > npu_inference_example.c << 'EOF'
+[Paste npu_inference_example.c content]
+EOF
+
+cat > multi_camera_example.c << 'EOF'
+[Paste multi_camera_example.c content]
+EOF
+
+# Build examples
+gcc -o simple_alloc_example simple_alloc_example.c -lddr_manager
+gcc -o npu_inference_example npu_inference_example.c -lddr_manager -lrknnrt -lm
+gcc -o multi_camera_example multi_camera_example.c -lddr_manager -lrknnrt -lpthread -lm
+
+# Run examples
+./simple_alloc_example --test
+./npu_inference_example --test
+./multi_camera_example --cameras 4 --detection
