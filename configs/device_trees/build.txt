@@ -1,0 +1,39 @@
+How to Use These Device Tree Files
+1. Compile Device Tree
+bash
+
+# Install device tree compiler if not installed
+sudo apt-get install device-tree-compiler
+
+# Compile DTS to DTB
+dtc -I dts -O dtb -o rk3568-mixtile-edge2.dtb rk3568-mixtile-edge2.dts
+dtc -I dts -O dtb -o rk3568-radxa-rock3b.dtb rk3568-radxa-rock3b.dts
+dtc -I dts -O dtb -o rk3568-custom.dtb rk3568-custom.dts
+
+2. Use with U-Boot
+bash
+
+# Place dtb in U-Boot directory
+cp rk3568-mixtile-edge2.dtb /boot/dtb/
+
+3. Use with Kernel
+bash
+
+# Load device tree during kernel boot
+make dtbs
+# Or specify dtb in bootargs
+bootargs = "console=ttyS2,1500000 earlycon=uart8250,mmio32,0xfe660000 root=/dev/mmcblk0p5 rw rootwait"
+
+4. Create Custom Board Support
+
+    Copy rk3568-custom.dts to rk3568-your-board.dts
+
+    Update model and compatible strings
+
+    Configure memory size
+
+    Enable/disable peripherals
+
+    Compile and test
+
+

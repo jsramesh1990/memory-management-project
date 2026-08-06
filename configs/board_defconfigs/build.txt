@@ -1,0 +1,47 @@
+How to Use These Configurations
+1. Creating the Files
+bash
+
+# Navigate to the configs directory
+cd RK3568-DDR-Memory/configs/board_defconfigs/
+
+# Create each configuration file with the content above
+cat > mixtile_edge2_defconfig << 'EOF'
+[PASTE MIXTILE EDGE 2 CONTENT]
+EOF
+
+# Repeat for other boards
+
+2. Building with a Specific Configuration
+bash
+
+# Load the configuration
+make mixtile_edge2_defconfig
+
+# Build the project
+make
+
+# Or build with a custom config
+make custom_board_defconfig
+make
+
+3. Customizing for Your Own Board
+
+    Copy the custom_board_defconfig template
+
+    Modify memory sizes, frequencies, and timings
+
+    Enable/disable features based on your hardware
+
+    Save and build
+
+4. Comparing Configurations
+bash
+
+# Compare two configurations
+diff mixtile_edge2_defconfig radxa_rock3b_defconfig
+
+# Generate a summary of differences
+./scripts/build/config_diff.sh mixtile_edge2_defconfig radxa_rock3b_defconfig
+
+

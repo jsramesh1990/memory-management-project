@@ -1,0 +1,205 @@
+{
+  "profile": {
+    "name": "Home Assistant Smart Home Hub",
+    "version": "1.0.0",
+    "description": "Optimized memory configuration for Home Assistant smart home automation",
+    "target_use_case": "Smart Home Automation",
+    "created_date": "2024-08-06",
+    "author": "Sebastian"
+  },
+  
+  "system_overview": {
+    "total_ram_mb": 4096,
+    "reserved_memory_mb": 512,
+    "available_system_memory_mb": 3584,
+    "swap_enabled": true,
+    "swap_size_mb": 2048,
+    "memory_governor": "performance"
+  },
+  
+  "memory_partitioning": {
+    "bootloader": {
+      "size_mb": 16,
+      "description": "U-Boot SPL and proper"
+    },
+    "kernel": {
+      "size_mb": 224,
+      "description": "Linux kernel image"
+    },
+    "device_tree": {
+      "size_mb": 16,
+      "description": "Device tree blobs"
+    },
+    "reserved": {
+      "size_mb": 240,
+      "description": "System reserved memory"
+    },
+    "npu_memory": {
+      "size_mb": 128,
+      "description": "NPU dedicated memory pool"
+    },
+    "gpu_memory": {
+      "size_mb": 128,
+      "description": "GPU frame buffers"
+    },
+    "vpu_memory": {
+      "size_mb": 256,
+      "description": "VPU/camera CMA buffers"
+    },
+    "system_ram": {
+      "size_mb": 3072,
+      "description": "General system memory"
+    }
+  },
+  
+  "service_allocations": {
+    "home_assistant": {
+      "min_memory_mb": 512,
+      "max_memory_mb": 1024,
+      "description": "Home Assistant core and integrations"
+    },
+    "database": {
+      "min_memory_mb": 256,
+      "max_memory_mb": 512,
+      "description": "SQLite/PostgreSQL database"
+    },
+    "mqtt_broker": {
+      "min_memory_mb": 64,
+      "max_memory_mb": 128,
+      "description": "MQTT message broker"
+    },
+    "zigbee_coordinator": {
+      "min_memory_mb": 32,
+      "max_memory_mb": 64,
+      "description": "Zigbee/Z-Wave coordination"
+    },
+    "web_server": {
+      "min_memory_mb": 128,
+      "max_memory_mb": 256,
+      "description": "Web UI and API server"
+    },
+    "voice_assistant": {
+      "min_memory_mb": 256,
+      "max_memory_mb": 512,
+      "description": "Voice control with NPU"
+    },
+    "automation_engine": {
+      "min_memory_mb": 128,
+      "max_memory_mb": 256,
+      "description": "Automation rules engine"
+    },
+    "logging": {
+      "min_memory_mb": 64,
+      "max_memory_mb": 128,
+      "description": "System and event logging"
+    }
+  },
+  
+  "npu_configuration": {
+    "enabled": true,
+    "memory_pool_mb": 128,
+    "model_storage_mb": 64,
+    "input_buffers_mb": 16,
+    "output_buffers_mb": 16,
+    "scratch_space_mb": 32,
+    "ai_tasks": [
+      {
+        "name": "Voice Recognition",
+        "model": "wake_word_detection",
+        "memory_required_mb": 32,
+        "priority": "high"
+      },
+      {
+        "name": "Object Detection",
+        "model": "person_detection",
+        "memory_required_mb": 48,
+        "priority": "medium"
+      },
+      {
+        "name": "Facial Recognition",
+        "model": "face_identification",
+        "memory_required_mb": 32,
+        "priority": "low"
+      }
+    ]
+  },
+  
+  "performance_tuning": {
+    "cpu_governor": "ondemand",
+    "memory_compaction": true,
+    "transparent_hugepages": true,
+    "swappiness": 10,
+    "dirty_ratio": 20,
+    "dirty_background_ratio": 10,
+    "cache_pressure": 100,
+    "oom_killer": false,
+    "memory_compression": true
+  },
+  
+  "io_scheduler": {
+    "type": "mq-deadline",
+    "queue_depth": 64,
+    "readahead_kb": 2048
+  },
+  
+  "power_management": {
+    "dynamic_frequency_scaling": true,
+    "voltage_scaling": true,
+    "power_gating": true,
+    "suspend_to_ram": false,
+    "suspend_to_disk": false,
+    "fan_control": {
+      "enabled": true,
+      "temperature_threshold_1": 60,
+      "temperature_threshold_2": 70,
+      "temperature_threshold_3": 80
+    }
+  },
+  
+  "security": {
+    "memory_encryption": true,
+    "secure_memory_regions": true,
+    "trustzone": true,
+    "secure_boot": true,
+    "memory_protection": true
+  },
+  
+  "monitoring": {
+    "memory_usage_alert_threshold": 85,
+    "memory_usage_critical_threshold": 95,
+    "logging_level": "info",
+    "metrics_collection": true,
+    "metrics_retention_days": 30
+  },
+  
+  "backup": {
+    "enabled": true,
+    "frequency": "daily",
+    "compression": true,
+    "retention_days": 7
+  },
+  
+  "recommended_hardware": {
+    "min_ram_gb": 2,
+    "recommended_ram_gb": 4,
+    "min_storage_gb": 16,
+    "recommended_storage_gb": 32,
+    "network": "Ethernet/Wi-Fi",
+    "zigbee_controller": true,
+    "zwave_controller": true
+  },
+  
+  "compatibility": {
+    "home_assistant_version": "2024.8.0+",
+    "zigbee2mqtt_version": "1.35.0+",
+    "zwave_js_version": "12.0.0+",
+    "mosquitto_version": "2.0.0+"
+  },
+  
+  "notes": [
+    "This profile is optimized for 24/7 operation",
+    "NPU acceleration provides fast voice control and object detection",
+    "Balanced memory allocation for responsiveness and stability",
+    "Recommended for homes with 50+ smart devices"
+  ]
+}

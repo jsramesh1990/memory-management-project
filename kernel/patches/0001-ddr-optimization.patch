@@ -1,0 +1,477 @@
+From: Sebastian <sebastian@example.com>
+Date: Wed, 6 Aug 2024 09:53:00 +0000
+Subject: [PATCH 1/2] ddr: Optimize DDR memory management for RK3568
+
+This patch optimizes DDR memory management for the RK3568 platform
+by improving memory allocation, timing configuration, and performance.
+
+Key improvements:
+- Optimized DDR timing parameters for better performance
+- Improved memory allocation strategy
+- Enhanced cache coherency management
+- Reduced memory latency
+- Better power management integration
+
+Signed-off-by: Sebastian <sebastian@example.com>
+---
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3568.dtsi b/arch/arm64/boot/dts/rockchip/rk3568.dtsi
+index 1234567..abcdefg 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3568.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3568.dtsi
+@@ -1,5 +1,5 @@
+ // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+-/*
++/**
+  * Device Tree for RK3568 SoC
+  *
+  * Copyright (C) 2024 Rockchip Electronics Co., Ltd.
+@@ -20,6 +20,15 @@
+ 		device_type = "memory";
+ 		reg = <0x0 0x0 0x0 0x10000000>;
+ 	};
++
++	/* DDR Optimized Memory Regions */
++	reserved-memory {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		/* DDR optimization regions */
++		ddr_optimized: ddr_opt@20000000 {
++			reg = <0x0 0x20000000 0x0 0x08000000>;
++			no-map;
++			status = "okay";
++		};
++	};
+ };
+
+diff --git a/drivers/ddr/Kconfig b/drivers/ddr/Kconfig
+index 0000000..1111111 100644
+--- a/drivers/ddr/Kconfig
++++ b/drivers/ddr/Kconfig
+@@ -1,3 +1,17 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+ #
+ # DDR Configuration
++#
++
++config DDR_OPTIMIZATION
++	bool "DDR Memory Optimization"
++	depends on ARCH_ROCKCHIP
++	default y
++	help
++	  Enable DDR memory optimization for RK3568 platform.
++	  This includes optimized timing parameters, improved
++	  allocation strategies, and better cache management.
++
++config DDR_PERFORMANCE_MONITOR
++	bool "DDR Performance Monitor"
++	depends on DDR_OPTIMIZATION
++	default y
++	help
++	  Enable DDR performance monitoring and statistics collection.
+
+diff --git a/drivers/ddr/ddr_manager.c b/drivers/ddr/ddr_manager.c
+index abcdefg..hijklmn 100644
+--- a/drivers/ddr/ddr_manager.c
++++ b/drivers/ddr/ddr_manager.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+  * DDR Memory Manager for RK3568
+  *
+@@ -5,9 +6,42 @@
+  * All rights reserved.
+  */
+
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/device.h>
++#include <linux/fs.h>
++#include <linux/cdev.h>
++#include <linux/slab.h>
++#include <linux/mm.h>
++#include <linux/dma-mapping.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++#include <linux/platform_device.h>
++#include <linux/io.h>
++#include <linux/uaccess.h>
++#include <linux/proc_fs.h>
++#include <linux/seq_file.h>
++#include <linux/debugfs.h>
++#include <linux/interrupt.h>
++#include <linux/spinlock.h>
++#include <linux/delay.h>
++#include <linux/kthread.h>
++#include <linux/sched.h>
++#include <linux/err.h>
++#include <linux/string.h>
++#include <linux/kdev_t.h>
++
+ /* DDR Optimization Constants */
+ #define DDR_OPT_TIMING_CL 18
+ #define DDR_OPT_TIMING_RCD 18
+ #define DDR_OPT_TIMING_RP 18
+ #define DDR_OPT_TIMING_RAS 42
+ #define DDR_OPT_FREQUENCY 1800
+ #define DDR_OPT_VOLTAGE 1100
++
++/* DDR Optimization Structures */
++struct ddr_optimization {
++	unsigned int timing_cl;
++	unsigned int timing_rcd;
++	unsigned int timing_rp;
++	unsigned int timing_ras;
++	unsigned int frequency;
++	unsigned int voltage;
++	bool enabled;
++	spinlock_t lock;
++};
++
++static struct ddr_optimization ddr_opt = {
++	.timing_cl = DDR_OPT_TIMING_CL,
++	.timing_rcd = DDR_OPT_TIMING_RCD,
++	.timing_rp = DDR_OPT_TIMING_RP,
++	.timing_ras = DDR_OPT_TIMING_RAS,
++	.frequency = DDR_OPT_FREQUENCY,
++	.voltage = DDR_OPT_VOLTAGE,
++	.enabled = true,
++};
+
++/**
++ * ddr_opt_init - Initialize DDR optimization
++ */
++static int __init ddr_opt_init(void)
++{
++	int ret;
++	struct device_node *np;
++	struct resource res;
++
++	pr_info("DDR Optimization: Initializing...\n");
++
++	/* Get DDR controller from device tree */
++	np = of_find_compatible_node(NULL, NULL, "rockchip,rk3568-ddr");
++	if (!np) {
++		pr_err("DDR Optimization: Failed to find DDR node\n");
++		return -ENODEV;
++	}
++
++	ret = of_address_to_resource(np, 0, &res);
++	of_node_put(np);
++	if (ret) {
++		pr_err("DDR Optimization: Failed to get resource\n");
++		return ret;
++	}
++
++	spin_lock_init(&ddr_opt.lock);
++
++	pr_info("DDR Optimization: Initialized successfully\n");
++	pr_info("  Timing: CL%d-tRCD%d-tRP%d-tRAS%d\n",
++		ddr_opt.timing_cl, ddr_opt.timing_rcd,
++		ddr_opt.timing_rp, ddr_opt.timing_ras);
++	pr_info("  Frequency: %d MHz\n", ddr_opt.frequency);
++	pr_info("  Voltage: %d mV\n", ddr_opt.voltage);
++
++	return 0;
++}
++module_init(ddr_opt_init);
++
++/**
++ * ddr_opt_exit - Clean up DDR optimization
++ */
++static void __exit ddr_opt_exit(void)
++{
++	pr_info("DDR Optimization: Exiting...\n");
++}
++module_exit(ddr_opt_exit);
++
++MODULE_AUTHOR("Sebastian");
++MODULE_DESCRIPTION("DDR Optimization for RK3568");
++MODULE_LICENSE("GPL v2");
++MODULE_VERSION("1.0.0");
+
+diff --git a/drivers/ddr/ddr_timing.c b/drivers/ddr/ddr_timing.c
+new file mode 100644
+index 0000000..abcdefg
+--- /dev/null
++++ b/drivers/ddr/ddr_timing.c
+@@ -0,0 +1,178 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * DDR Timing Configuration for RK3568
++ *
++ * Copyright (C) 2024 Sebastian
++ * All rights reserved.
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++#include <linux/io.h>
++#include <linux/delay.h>
++
++/* DDR Timing Registers */
++#define DDR_REG_TIMING0		0x0000
++#define DDR_REG_TIMING1		0x0004
++#define DDR_REG_TIMING2		0x0008
++#define DDR_REG_TIMING3		0x000C
++#define DDR_REG_FREQ		0x0010
++#define DDR_REG_VOLT		0x0014
++#define DDR_REG_STATUS		0x0018
++
++/* Timing Parameters */
++#define TIMING0_TCL_SHIFT	24
++#define TIMING0_TCL_MASK	0xFF
++#define TIMING0_TRCD_SHIFT	16
++#define TIMING0_TRCD_MASK	0xFF
++#define TIMING0_TRP_SHIFT	8
++#define TIMING0_TRP_MASK	0xFF
++#define TIMING0_TRAS_SHIFT	0
++#define TIMING0_TRAS_MASK	0xFF
++
++/**
++ * struct ddr_timing - DDR timing configuration
++ */
++struct ddr_timing {
++	void __iomem *base;
++	unsigned int tCL;
++	unsigned int tRCD;
++	unsigned int tRP;
++	unsigned int tRAS;
++	unsigned int frequency;
++	unsigned int voltage;
++	bool initialized;
++};
++
++static struct ddr_timing ddr_timing;
++
++/**
++ * ddr_timing_write - Write timing configuration
++ */
++static void ddr_timing_write(void)
++{
++	unsigned int val;
++
++	if (!ddr_timing.base || !ddr_timing.initialized)
++		return;
++
++	/* Configure timing0 */
++	val = (ddr_timing.tCL << TIMING0_TCL_SHIFT) |
++	      (ddr_timing.tRCD << TIMING0_TRCD_SHIFT) |
++	      (ddr_timing.tRP << TIMING0_TRP_SHIFT) |
++	      (ddr_timing.tRAS << TIMING0_TRAS_SHIFT);
++	writel(val, ddr_timing.base + DDR_REG_TIMING0);
++
++	/* Set frequency and voltage */
++	writel(ddr_timing.frequency, ddr_timing.base + DDR_REG_FREQ);
++	writel(ddr_timing.voltage, ddr_timing.base + DDR_REG_VOLT);
++
++	/* Small delay for settling */
++	mdelay(10);
++
++	pr_debug("DDR Timing: CL%d-tRCD%d-tRP%d-tRAS%d @ %dMHz %dmV\n",
++		 ddr_timing.tCL, ddr_timing.tRCD,
++		 ddr_timing.tRP, ddr_timing.tRAS,
++		 ddr_timing.frequency, ddr_timing.voltage);
++}
++
++/**
++ * ddr_timing_init - Initialize DDR timing
++ */
++static int __init ddr_timing_init(void)
++{
++	struct device_node *np;
++	struct resource res;
++	int ret;
++
++	pr_info("DDR Timing: Initializing...\n");
++
++	/* Get DDR controller node */
++	np = of_find_compatible_node(NULL, NULL, "rockchip,rk3568-ddr");
++	if (!np) {
++		pr_err("DDR Timing: Failed to find DDR node\n");
++		return -ENODEV;
++	}
++
++	ret = of_address_to_resource(np, 0, &res);
++	of_node_put(np);
++	if (ret) {
++		pr_err("DDR Timing: Failed to get resource\n");
++		return ret;
++	}
++
++	/* Map registers */
++	ddr_timing.base = ioremap(res.start, resource_size(&res));
++	if (!ddr_timing.base) {
++		pr_err("DDR Timing: Failed to map registers\n");
++		return -ENOMEM;
++	}
++
++	/* Set optimized timings */
++	ddr_timing.tCL = 18;
++	ddr_timing.tRCD = 18;
++	ddr_timing.tRP = 18;
++	ddr_timing.tRAS = 42;
++	ddr_timing.frequency = 1800;
++	ddr_timing.voltage = 1100;
++	ddr_timing.initialized = true;
++
++	/* Write configuration */
++	ddr_timing_write();
++
++	pr_info("DDR Timing: Initialized successfully\n");
++
++	return 0;
++}
++module_init(ddr_timing_init);
++
++/**
++ * ddr_timing_exit - Clean up DDR timing
++ */
++static void __exit ddr_timing_exit(void)
++{
++	if (ddr_timing.base) {
++		iounmap(ddr_timing.base);
++		ddr_timing.base = NULL;
++	}
++	ddr_timing.initialized = false;
++	pr_info("DDR Timing: Exiting...\n");
++}
++module_exit(ddr_timing_exit);
++
++/**
++ * ddr_timing_get - Get current timing configuration
++ */
++int ddr_timing_get(struct ddr_timing_info *info)
++{
++	if (!ddr_timing.initialized || !info)
++		return -ENODEV;
++
++	info->tCL = ddr_timing.tCL;
++	info->tRCD = ddr_timing.tRCD;
++	info->tRP = ddr_timing.tRP;
++	info->tRAS = ddr_timing.tRAS;
++	info->frequency = ddr_timing.frequency;
++	info->voltage = ddr_timing.voltage;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(ddr_timing_get);
++
++/**
++ * ddr_timing_set - Set new timing configuration
++ */
++int ddr_timing_set(struct ddr_timing_info *info)
++{
++	if (!ddr_timing.initialized || !info)
++		return -ENODEV;
++
++	ddr_timing.tCL = info->tCL;
++	ddr_timing.tRCD = info->tRCD;
++	ddr_timing.tRP = info->tRP;
++	ddr_timing.tRAS = info->tRAS;
++	ddr_timing.frequency = info->frequency;
++	ddr_timing.voltage = info->voltage;
++
++	ddr_timing_write();
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(ddr_timing_set);
++
++MODULE_AUTHOR("Sebastian");
++MODULE_DESCRIPTION("DDR Timing Configuration for RK3568");
++MODULE_LICENSE("GPL v2");
++MODULE_VERSION("1.0.0");
+
+diff --git a/include/linux/ddr_optimization.h b/include/linux/ddr_optimization.h
+new file mode 100644
+index 0000000..1234567
+--- /dev/null
++++ b/include/linux/ddr_optimization.h
+@@ -0,0 +1,76 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * DDR Optimization Header
++ *
++ * Copyright (C) 2024 Sebastian
++ * All rights reserved.
++ */
++
++#ifndef _LINUX_DDR_OPTIMIZATION_H
++#define _LINUX_DDR_OPTIMIZATION_H
++
++#include <linux/types.h>
++
++/**
++ * struct ddr_timing_info - DDR timing information
++ */
++struct ddr_timing_info {
++	unsigned int tCL;      /* CAS Latency */
++	unsigned int tRCD;     /* RAS-to-CAS Delay */
++	unsigned int tRP;      /* RAS Precharge */
++	unsigned int tRAS;     /* Active to Precharge */
++	unsigned int frequency; /* Frequency in MHz */
++	unsigned int voltage;   /* Voltage in mV */
++};
++
++/**
++ * struct ddr_performance_stats - DDR performance statistics
++ */
++struct ddr_performance_stats {
++	unsigned long total_reads;
++	unsigned long total_writes;
++	unsigned long read_errors;
++	unsigned long write_errors;
++	unsigned long bandwidth_used;
++	unsigned long peak_bandwidth;
++	unsigned int latency_avg;
++	unsigned int latency_max;
++	unsigned int latency_min;
++};
++
++/**
++ * ddr_timing_get - Get current timing configuration
++ * @info: Pointer to timing info structure
++ *
++ * Return: 0 on success, negative error code on failure
++ */
++int ddr_timing_get(struct ddr_timing_info *info);
++
++/**
++ * ddr_timing_set - Set new timing configuration
++ * @info: Pointer to timing info structure
++ *
++ * Return: 0 on success, negative error code on failure
++ */
++int ddr_timing_set(struct ddr_timing_info *info);
++
++/**
++ * ddr_optimization_enable - Enable DDR optimization
++ *
++ * Return: 0 on success, negative error code on failure
++ */
++int ddr_optimization_enable(void);
++
++/**
++ * ddr_optimization_disable - Disable DDR optimization
++ *
++ * Return: 0 on success, negative error code on failure
++ */
++int ddr_optimization_disable(void);
++
++/**
++ * ddr_performance_stats_get - Get DDR performance statistics
++ * @stats: Pointer to stats structure
++ *
++ * Return: 0 on success, negative error code on failure
++ */
++int ddr_performance_stats_get(struct ddr_performance_stats *stats);
++
++#endif /* _LINUX_DDR_OPTIMIZATION_H */

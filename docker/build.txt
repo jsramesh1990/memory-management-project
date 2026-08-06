@@ -1,0 +1,91 @@
+How to Use Docker Setup
+1. Build the Docker Images
+bash
+
+# Build all images
+docker-compose build
+
+# Build specific image
+docker-compose build dev
+docker-compose build build
+docker-compose build test
+
+# Build with no cache
+docker-compose build --no-cache
+
+2. Run Development Environment
+bash
+
+# Start development container
+docker-compose up -d dev
+
+# Enter the container
+docker-compose exec dev bash
+
+# Run with GUI support
+docker-compose up dev
+
+3. Build the Project
+bash
+
+# Start build container
+docker-compose run --rm build
+
+# Inside container:
+cd /workspace
+make clean
+make
+make install
+
+4. Run Tests
+bash
+
+# Run tests
+docker-compose run --rm test
+
+# With coverage report
+docker-compose run --rm test pytest --cov=/workspace/src --cov-report=html
+
+# Run specific test
+docker-compose run --rm test pytest tests/test_ddr_layout.py -v
+
+5. Use Jupyter Notebook
+bash
+
+# Start Jupyter
+docker-compose up -d jupyter
+
+# Access at http://localhost:8888
+# Token: development
+
+6. Monitoring and Metrics
+bash
+
+# Start monitoring stack
+docker-compose up -d prometheus grafana
+
+# Access Grafana at http://localhost:3000
+# Default credentials: admin/admin
+
+7. Useful Docker Commands
+bash
+
+# List running containers
+docker-compose ps
+
+# View logs
+docker-compose logs -f dev
+
+# Stop all containers
+docker-compose down
+
+# Remove all containers and volumes
+docker-compose down -v
+
+# Execute command in container
+docker-compose exec dev make clean
+
+# Copy files to/from container
+docker cp file.txt rk3568-ddr-dev:/workspace/
+
+

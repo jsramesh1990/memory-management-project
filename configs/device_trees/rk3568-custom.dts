@@ -1,0 +1,725 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Device Tree for Custom RK3568 Board
+ * Template for new hardware designs
+ *
+ * Copyright (C) 2024 Sebastian
+ * All rights reserved.
+ *
+ * INSTRUCTIONS:
+ * 1. Copy this file and rename to rk3568-your-board.dts
+ * 2. Update model and compatible strings
+ * 3. Configure memory size (reg property)
+ * 4. Define reserved memory regions as needed
+ * 5. Enable/disable peripherals as per your hardware
+ * 6. Configure pinctrl for your specific GPIO assignments
+ * 7. Test and adjust based on your hardware
+ */
+
+/dts-v1/;
+#include "rk3568.dtsi"
+
+/ {
+	/* TODO: Update model name */
+	model = "Custom RK3568 Board";
+	compatible = "custom,board", "rockchip,rk3568";
+
+	/* Memory Configuration - Adjust based on your board's RAM */
+	/* 
+	 * Examples:
+	 * 2GB: reg = <0x0 0x0 0x0 0x80000000>;
+	 * 4GB: reg = <0x0 0x0 0x0 0x100000000>;
+	 * 8GB: reg = <0x0 0x0 0x2 0x00000000>;
+	 */
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x100000000>;  /* 4GB default */
+	};
+
+	/* Reserved Memory Regions - Adjust based on your needs */
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		/* Bootloader Region - Keep this */
+		bootloader@0 {
+			reg = <0x0 0x00000000 0x0 0x01000000>;
+			no-map;
+			status = "okay";
+		};
+
+		/* U-Boot Environment - Keep this */
+		uboot_env@1000000 {
+			reg = <0x0 0x01000000 0x0 0x01000000>;
+			no-map;
+			status = "okay";
+		};
+
+		/* Linux Kernel - Adjust size if needed */
+		kernel@2000000 {
+			reg = <0x0 0x02000000 0x0 0x0E000000>;
+			no-map;
+			status = "okay";
+		};
+
+		/* Device Tree Blob */
+		dtb@10000000 {
+			reg = <0x0 0x10000000 0x0 0x01000000>;
+			no-map;
+			status = "okay";
+		};
+
+		/* Reserved System Region - Adjust size */
+		reserved@11000000 {
+			reg = <0x0 0x11000000 0x0 0x0F000000>;
+			no-map;
+			status = "okay";
+		};
+
+		/* NPU Memory Pool - Enable if using NPU */
+		/* Adjust size based on your AI workload */
+		npu_memory: npu@20000000 {
+			reg = <0x0 0x20000000 0x0 0x08000000>;  /* 128MB */
+			no-map;
+			status = "okay";  /* Set to "disabled" if no NPU */
+		};
+
+		/* GPU Memory Pool - Enable if using GPU */
+		gpu_memory: gpu@28000000 {
+			reg = <0x0 0x28000000 0x0 0x08000000>;  /* 128MB */
+			no-map;
+			status = "okay";  /* Set to "disabled" if no GPU */
+		};
+
+		/* VPU/Camera Buffers - CMA region */
+		vpu_memory: vpu@30000000 {
+			compatible = "shared-dma-pool";
+			reg = <0x0 0x30000000 0x0 0x10000000>;  /* 256MB */
+			reusable;
+			status = "okay";  /* Set to "disabled" if no video */
+		};
+
+		/* Optional: Secure Memory Region */
+		secure_memory: secure@40000000 {
+			reg = <0x0 0x40000000 0x0 0x01000000>;
+			no-map;
+			status = "disabled";  /* Enable if using secure features */
+		};
+
+		/* Optional: OP-TEE Memory */
+		optee_memory: optee@41000000 {
+			reg = <0x0 0x41000000 0x0 0x02000000>;
+			no-map;
+			status = "disabled";  /* Enable if using OP-TEE */
+		};
+	};
+
+	/* Board-Specific Properties */
+	chosen {
+		stdout-path = &uart2;
+		/* Update UART and root device as per your board */
+		bootargs = "console=ttyS2,1500000 earlycon=uart8250,mmio32,0xfe660000 root=/dev/mmcblk0p5 rw rootwait";
+	};
+
+	/* GPIO LEDs - Update GPIO pins as per your board */
+	leds {
+		compatible = "gpio-leds";
+		status = "okay";
+
+		power_led: power {
+			gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
+			label = "power";
+			linux,default-trigger = "heartbeat";
+		};
+
+		status_led: status {
+			gpios = <&gpio0 11 GPIO_ACTIVE_HIGH>;
+			label = "status";
+			linux,default-trigger = "mmc0";
+		};
+	};
+
+	/* Fan Control - Remove if no fan */
+	fan0: pwm-fan {
+		compatible = "pwm-fan";
+		cooling-levels = <0 128 192 255>;
+		#cooling-cells = <2>;
+		pwms = <&pwm0 0 10000 0>;
+		status = "disabled";  /* Enable if fan present */
+	};
+
+	/* SDIO Power Sequence - Enable if using Wi-Fi */
+	sdio_pwrseq: sdio-pwrseq {
+		compatible = "mmc-pwrseq-simple";
+		clocks = <&pmucru CLK_RTC_32K>;
+		clock-names = "ext_clock";
+		pinctrl-names = "default";
+		pinctrl-0 = <&wifi_enable_h>;
+		post-power-on-delay-ms = <200>;
+		reset-gpios = <&gpio0 12 GPIO_ACTIVE_LOW>;
+		status = "disabled";  /* Enable if Wi-Fi present */
+	};
+
+	/* Wi-Fi/BT - Enable if present */
+	wireless {
+		compatible = "brcm,bcm4329-fmac";
+		interrupt-parent = <&gpio0>;
+		interrupts = <13 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "host-wake";
+		pinctrl-names = "default";
+		pinctrl-0 = <&wifi_host_wake>;
+		status = "disabled";  /* Enable if Wi-Fi present */
+	};
+};
+
+/* ============================================================ */
+/* CPU Configuration - Usually keep these as-is                  */
+/* ============================================================ */
+
+&cpu0 {
+	cpu-supply = <&vdd_cpu>;
+	operating-points-v2 = <&cpu0_opp_table>;
+};
+
+&cpu0_opp_table {
+	opp-408000000 {
+		opp-hz = /bits/ 64 <408000000>;
+		opp-microvolt = <900000>;
+	};
+	opp-600000000 {
+		opp-hz = /bits/ 64 <600000000>;
+		opp-microvolt = <900000>;
+	};
+	opp-816000000 {
+		opp-hz = /bits/ 64 <816000000>;
+		opp-microvolt = <1000000>;
+	};
+	opp-1008000000 {
+		opp-hz = /bits/ 64 <1008000000>;
+		opp-microvolt = <1100000>;
+	};
+	opp-1200000000 {
+		opp-hz = /bits/ 64 <1200000000>;
+		opp-microvolt = <1200000>;
+	};
+	opp-1404000000 {
+		opp-hz = /bits/ 64 <1404000000>;
+		opp-microvolt = <1300000>;
+	};
+	opp-1608000000 {
+		opp-hz = /bits/ 64 <1608000000>;
+		opp-microvolt = <1350000>;
+	};
+	opp-1800000000 {
+		opp-hz = /bits/ 64 <1800000000>;
+		opp-microvolt = <1400000>;
+	};
+	opp-2000000000 {
+		opp-hz = /bits/ 64 <2000000000>;
+		opp-microvolt = <1425000>;
+	};
+};
+
+/* ============================================================ */
+/* GPU Configuration - Enable/disable based on your board       */
+/* ============================================================ */
+
+&gpu {
+	status = "okay";  /* Set to "disabled" if no GPU */
+	mali-supply = <&vdd_gpu>;
+	operating-points-v2 = <&gpu_opp_table>;
+};
+
+&gpu_opp_table {
+	opp-200000000 {
+		opp-hz = /bits/ 64 <200000000>;
+		opp-microvolt = <900000>;
+	};
+	opp-300000000 {
+		opp-hz = /bits/ 64 <300000000>;
+		opp-microvolt = <900000>;
+	};
+	opp-400000000 {
+		opp-hz = /bits/ 64 <400000000>;
+		opp-microvolt = <950000>;
+	};
+	opp-600000000 {
+		opp-hz = /bits/ 64 <600000000>;
+		opp-microvolt = <1000000>;
+	};
+	opp-800000000 {
+		opp-hz = /bits/ 64 <800000000>;
+		opp-microvolt = <1050000>;
+	};
+};
+
+/* ============================================================ */
+/* NPU Configuration - Enable/disable based on your board      */
+/* ============================================================ */
+
+&npu {
+	status = "okay";  /* Set to "disabled" if no NPU */
+	rockchip,memory-reserved = <&npu_memory>;
+	operating-points-v2 = <&npu_opp_table>;
+};
+
+&npu_opp_table {
+	opp-400000000 {
+		opp-hz = /bits/ 64 <400000000>;
+		opp-microvolt = <900000>;
+	};
+	opp-600000000 {
+		opp-hz = /bits/ 64 <600000000>;
+		opp-microvolt = <950000>;
+	};
+	opp-800000000 {
+		opp-hz = /bits/ 64 <800000000>;
+		opp-microvolt = <1000000>;
+	};
+	opp-1000000000 {
+		opp-hz = /bits/ 64 <1000000000>;
+		opp-microvolt = <1100000>;
+	};
+};
+
+/* ============================================================ */
+/* VPU Configuration - Enable/disable based on your board      */
+/* ============================================================ */
+
+&vpu {
+	status = "okay";  /* Set to "disabled" if no VPU */
+	assigned-clocks = <&cru ACLK_VPU>, <&cru HCLK_VPU>;
+	assigned-clock-rates = <400000000>, <200000000>;
+};
+
+&vepu {
+	status = "okay";
+};
+
+&vdec {
+	status = "okay";
+};
+
+&rga2 {
+	status = "okay";
+};
+
+/* ============================================================ */
+/* USB Configuration - Enable based on your USB ports          */
+/* ============================================================ */
+
+&usb_host0_ehci {
+	status = "okay";  /* Set to "disabled" if no USB */
+};
+
+&usb_host0_ohci {
+	status = "okay";
+};
+
+&usb_host1_ehci {
+	status = "okay";
+};
+
+&usb_host1_ohci {
+	status = "okay";
+};
+
+&usb2phy0 {
+	status = "okay";
+};
+
+&usb2phy1 {
+	status = "okay";
+};
+
+/* ============================================================ */
+/* SATA Configuration - Enable if SATA ports present           */
+/* ============================================================ */
+
+&sata0 {
+	status = "disabled";  /* Set to "okay" if SATA present */
+};
+
+&sata1 {
+	status = "disabled";
+};
+
+&sata2 {
+	status = "disabled";
+};
+
+/* ============================================================ */
+/* PCIe Configuration - Enable if PCIe present                 */
+/* ============================================================ */
+
+&pcie2x1 {
+	status = "disabled";  /* Set to "okay" if PCIe present */
+	reset-gpios = <&gpio1 13 GPIO_ACTIVE_HIGH>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pcie20_pins>;
+};
+
+&pcie30phy {
+	status = "disabled";  /* Set to "okay" if PCIe present */
+};
+
+/* ============================================================ */
+/* Ethernet - Enable if Ethernet ports present                  */
+/* ============================================================ */
+
+&gmac0 {
+	status = "disabled";  /* Set to "okay" if Ethernet present */
+	phy-mode = "rgmii";
+	clock_in_out = "output";
+	snps,reset-gpio = <&gpio2 18 GPIO_ACTIVE_LOW>;
+	snps,reset-active-low;
+	snps,reset-delays-us = <0 20000 100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&gmac0_miim>;
+};
+
+&gmac1 {
+	status = "disabled";
+	phy-mode = "rgmii";
+	clock_in_out = "output";
+	snps,reset-gpio = <&gpio2 19 GPIO_ACTIVE_LOW>;
+	snps,reset-active-low;
+	snps,reset-delays-us = <0 20000 100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&gmac1_miim>;
+};
+
+/* ============================================================ */
+/* eMMC Configuration - Enable if eMMC present                 */
+/* ============================================================ */
+
+&emmc {
+	status = "okay";  /* Set to "disabled" if no eMMC */
+	bus-width = <8>;
+	cap-mmc-highspeed;
+	mmc-hs200-1_8v;
+	mmc-hs400-1_8v;
+	supports-emmc;
+	no-sdio;
+	no-sd;
+	non-removable;
+	max-frequency = <200000000>;
+};
+
+/* ============================================================ */
+/* SD Card - Enable if SD card slot present                    */
+/* ============================================================ */
+
+&sdmmc0 {
+	status = "okay";  /* Set to "disabled" if no SD slot */
+	bus-width = <4>;
+	cap-sd-highspeed;
+	cd-gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
+	disable-wp;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdmmc0_bus4 &sdmmc0_clk &sdmmc0_cmd &sdmmc0_detect>;
+	max-frequency = <150000000>;
+};
+
+/* ============================================================ */
+/* SDIO - Enable for Wi-Fi                                      */
+/* ============================================================ */
+
+&sdmmc1 {
+	status = "disabled";  /* Set to "okay" if Wi-Fi present */
+	bus-width = <4>;
+	cap-sdio-irq;
+	cap-sd-highspeed;
+	keep-power-in-suspend;
+	mmc-pwrseq = <&sdio_pwrseq>;
+	non-removable;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdmmc1_bus4 &sdmmc1_clk &sdmmc1_cmd>;
+	sd-uhs-sdr104;
+	supports-sdio;
+};
+
+/* ============================================================ */
+/* SPI - Enable if SPI devices present                          */
+/* ============================================================ */
+
+&spi0 {
+	status = "disabled";  /* Set to "okay" if SPI present */
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi0m1_cs0 &spi0m1_pins>;
+};
+
+&spi1 {
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi1m1_cs0 &spi1m1_pins>;
+};
+
+/* ============================================================ */
+/* I2C - Enable if I2C devices present                        */
+/* ============================================================ */
+
+&i2c0 {
+	status = "okay";  /* Usually enabled for PMIC */
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c0_xfer>;
+};
+
+&i2c1 {
+	status = "disabled";
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c1_xfer>;
+};
+
+&i2c2 {
+	status = "disabled";
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c2_xfer>;
+};
+
+&i2c3 {
+	status = "disabled";
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c3_xfer>;
+};
+
+&i2c4 {
+	status = "disabled";
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c4_xfer>;
+};
+
+&i2c5 {
+	status = "disabled";
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c5_xfer>;
+};
+
+/* ============================================================ */
+/* UART - Enable the one you use for console                   */
+/* ============================================================ */
+
+&uart0 {
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_xfer>;
+};
+
+&uart1 {
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart1_xfer>;
+};
+
+&uart2 {
+	status = "okay";  /* Usually the console UART */
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart2_xfer>;
+};
+
+&uart3 {
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart3_xfer>;
+};
+
+&uart4 {
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart4_xfer>;
+};
+
+&uart5 {
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart5_xfer>;
+};
+
+/* ============================================================ */
+/* PWM - Enable if using PWM devices                           */
+/* ============================================================ */
+
+&pwm0 {
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pwm0_pins>;
+};
+
+&pwm1 {
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pwm1_pins>;
+};
+
+&pwm2 {
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pwm2_pins>;
+};
+
+&pwm3 {
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pwm3_pins>;
+};
+
+/* ============================================================ */
+/* Thermal - Enable temperature monitoring                     */
+/* ============================================================ */
+
+&thermal_zones {
+	cpu_thermal: cpu-thermal {
+		polling-delay-passive = <100>;
+		polling-delay = <1000>;
+		sustainable-power = <4500>;
+		thermal-sensors = <&tsadc 0>;
+
+		trips {
+			cpu_alert0: cpu-alert0 {
+				temperature = <70000>;
+				hysteresis = <2000>;
+				type = "passive";
+			};
+			cpu_alert1: cpu-alert1 {
+				temperature = <75000>;
+				hysteresis = <2000>;
+				type = "passive";
+			};
+			cpu_crit: cpu-crit {
+				temperature = <85000>;
+				hysteresis = <2000>;
+				type = "critical";
+			};
+		};
+
+		cooling-maps {
+			cpu_alert0_cooling {
+				trip = <&cpu_alert0>;
+				cooling-device = <&fan0 1 2>;
+			};
+			cpu_alert1_cooling {
+				trip = <&cpu_alert1>;
+				cooling-device = <&fan0 2 3>;
+			};
+		};
+	};
+};
+
+&tsadc {
+	status = "okay";
+	rockchip,hw-tshut-temp = <85000>;
+};
+
+/* ============================================================ */
+/* PMIC - Usually enabled                                       */
+/* ============================================================ */
+
+&pmic {
+	status = "okay";
+	compatible = "rockchip,rk3568-pmic";
+	system-power-controller;
+};
+
+/* ============================================================ */
+/* GPIO Keys - Update as per your board buttons                */
+/* ============================================================ */
+
+&gpio_keys {
+	status = "okay";
+	compatible = "gpio-keys";
+
+	power_key: power-key {
+		gpios = <&gpio0 1 GPIO_ACTIVE_LOW>;
+		label = "power";
+		linux,code = <KEY_POWER>;
+		debounce-interval = <100>;
+		wakeup-source;
+	};
+
+	recovery_key: recovery-key {
+		gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;
+		label = "recovery";
+		linux,code = <KEY_RESTART>;
+		debounce-interval = <100>;
+	};
+};
+
+/* ============================================================ */
+/* Display - Enable if HDMI/LVDS/MIPI display used             */
+/* ============================================================ */
+
+&hdmi {
+	status = "disabled";  /* Set to "okay" if HDMI present */
+	rockchip,phy-table =
+		<74250000 0x8009 0x0000 0x0272>,
+		<148500000 0x8029 0x0000 0x0272>,
+		<296703000 0x8039 0x0000 0x0272>,
+		<594000000 0x8039 0x0000 0x0272>;
+};
+
+&hdmi_in_vp0 {
+	status = "disabled";
+};
+
+&hdmi_in_vp1 {
+	status = "disabled";
+};
+
+&route_hdmi {
+	status = "disabled";
+	connect = <&vp0_out_hdmi>;
+};
+
+/* ============================================================ */
+/* Audio - Enable if audio hardware present                    */
+/* ============================================================ */
+
+&i2s0_8ch {
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2s0_lrck_tx &i2s0_sclk_tx &i2s0_sdi0_tx &i2s0_sdo0_tx>;
+};
+
+&i2s1_8ch {
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2s1_lrck_tx &i2s1_sclk_tx &i2s1_sdi0_tx &i2s1_sdo0_tx>;
+};
+
+&i2s2_2ch {
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2s2_lrck_tx &i2s2_sclk_tx &i2s2_sdi0_tx &i2s2_sdo0_tx>;
+};
+
+&codec {
+	status = "disabled";
+};
+
+/* ============================================================ */
+/* Pinctrl - Update GPIO assignments as per your hardware      */
+/* ============================================================ */
+
+&pinctrl {
+	wifi_enable_h: wifi-enable-h {
+		rockchip,pins = <0 RK_PA4 RK_FUNC_GPIO &pcfg_pull_none>;
+	};
+
+	wifi_host_wake: wifi-host-wake {
+		rockchip,pins = <0 RK_PA5 RK_FUNC_GPIO &pcfg_pull_none>;
+	};
+
+	pcie20_pins: pcie20-pins {
+		rockchip,pins = <1 RK_PD5 RK_FUNC_GPIO &pcfg_pull_none>;
+	};
+	
+	/* Custom pin configurations */
+	/* Add your custom pin groups here */
+};

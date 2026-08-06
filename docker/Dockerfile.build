@@ -1,0 +1,189 @@
+# Dockerfile for RK3568 DDR Memory Manager Build Environment
+# This container provides a complete cross-compilation environment
+# Version: 1.0.0
+# Author: Sebastian
+
+# Use Ubuntu 22.04 LTS as base
+FROM ubuntu:22.04
+
+# Set metadata
+LABEL maintainer="sebastian@example.com"
+LABEL description="RK3568 DDR Memory Manager Build Environment"
+LABEL version="1.0.0"
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV TERM=xterm-256color
+
+# Set working directory
+WORKDIR /workspace
+
+# Install base packages
+RUN apt-get update && apt-get install -y \
+    # Build essentials
+    build-essential \
+    gcc-arm-linux-gnueabihf \
+    g++-arm-linux-gnueabihf \
+    binutils-arm-linux-gnueabihf \
+    make \
+    cmake \
+    autoconf \
+    automake \
+    libtool \
+    pkg-config \
+    # Python and tools
+    python3 \
+    python3-pip \
+    python3-dev \
+    python3-venv \
+    python3-setuptools \
+    python3-wheel \
+    # Git and version control
+    git \
+    git-lfs \
+    subversion \
+    # Device tree tools
+    device-tree-compiler \
+    u-boot-tools \
+    # Kernel tools
+    linux-headers-generic \
+    kernel-package \
+    # Debugging tools
+    gdb \
+    strace \
+    ltrace \
+    valgrind \
+    # Networking tools
+    net-tools \
+    iputils-ping \
+    curl \
+    wget \
+    openssh-client \
+    # File system tools
+    dosfstools \
+    e2fsprogs \
+    f2fs-tools \
+    btrfs-progs \
+    squashfs-tools \
+    # Compression tools
+    zip \
+    unzip \
+    tar \
+    xz-utils \
+    # Documentation tools
+    doxygen \
+    graphviz \
+    pandoc \
+    # Text editors
+    vim \
+    nano \
+    emacs-nox \
+    # Miscellaneous
+    sudo \
+    tmux \
+    screen \
+    htop \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python packages
+RUN pip3 install --no-cache-dir \
+    # Build tools
+    meson \
+    ninja \
+    setuptools \
+    wheel \
+    # Python packages
+    numpy \
+    pandas \
+    matplotlib \
+    jupyter \
+    # AI frameworks
+    tensorflow \
+    torch \
+    onnx \
+    # RKNN tools
+    rknn-toolkit2 \
+    # Testing
+    pytest \
+    pytest-cov \
+    coverage \
+    # Linting
+    flake8 \
+    black \
+    mypy \
+    # Documentation
+    sphinx \
+    sphinx-rtd-theme \
+    recommonmark \
+    # Utilities
+    pyyaml \
+    json5 \
+    toml \
+    click \
+    tqdm
+
+# Install ARM cross-compilation tools for 64-bit ARM
+RUN apt-get update && apt-get install -y \
+    gcc-aarch64-linux-gnu \
+    g++-aarch64-linux-gnu \
+    binutils-aarch64-linux-gnu \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Rockchip specific tools
+RUN git clone https://github.com/rockchip-linux/rkbin.git /opt/rkbin \
+    && git clone https://github.com/rockchip-linux/u-boot.git /opt/u-boot \
+    && git clone https://github.com/rockchip-linux/kernel.git /opt/kernel
+
+# Create build directories
+RUN mkdir -p /workspace/build \
+    && mkdir -p /workspace/output \
+    && mkdir -p /workspace/logs \
+    && mkdir -p /workspace/.cache
+
+# Set up environment variables
+ENV PATH="/opt/rkbin/tools:/opt/u-boot/tools:$PATH"
+ENV CROSS_COMPILE="aarch64-linux-gnu-"
+ENV ARCH="arm64"
+ENV CC="aarch64-linux-gnu-gcc"
+ENV CXX="aarch64-linux-gnu-g++"
+ENV AR="aarch64-linux-gnu-ar"
+ENV LD="aarch64-linux-gnu-ld"
+ENV OBJCOPY="aarch64-linux-gnu-objcopy"
+ENV OBJDUMP="aarch64-linux-gnu-objdump"
+ENV STRIP="aarch64-linux-gnu-strip"
+
+# Set up user
+RUN useradd -m -u 1000 -s /bin/bash developer \
+    && echo "developer ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Switch to developer user
+USER developer
+WORKDIR /home/developer
+
+# Set up bash environment
+RUN echo 'export PS1="\u@\h:\w\$ "' >> /home/developer/.bashrc \
+    && echo 'alias ll="ls -alF"' >> /home/developer/.bashrc \
+    && echo 'alias la="ls -A"' >> /home/developer/.bashrc \
+    && echo 'alias l="ls -CF"' >> /home/developer/.bashrc \
+    && echo 'alias gs="git status"' >> /home/developer/.bashrc \
+    && echo 'alias gp="git pull"' >> /home/developer/.bashrc \
+    && echo 'alias gc="git commit"' >> /home/developer/.bashrc \
+    && echo 'alias gco="git checkout"' >> /home/developer/.bashrc \
+    && echo 'alias gb="git branch"' >> /home/developer/.bashrc
+
+# Set up Git
+RUN git config --global user.name "Developer" \
+    && git config --global user.email "developer@example.com" \
+    && git config --global core.editor "vim"
+
+# Default command
+CMD ["/bin/bash"]
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD test -f /usr/bin/gcc || exit 1

@@ -1,0 +1,56 @@
+ How to Use These Profiles
+1. Loading a Profile
+bash
+
+# Load a specific profile
+./scripts/memory_profile_loader.sh --load home_assistant_profile.json
+
+# Or use Python
+python3 ./scripts/load_profile.py --config home_assistant_profile.json
+
+2. Switching Between Profiles
+bash
+
+# List available profiles
+ls configs/memory_profiles/*.json
+
+# Switch to NVR profile
+./scripts/switch_profile.sh nvr_profile.json
+
+# Verify current profile
+./scripts/current_profile.sh
+
+3. Creating Custom Profiles
+bash
+
+# Copy template
+cp home_assistant_profile.json my_custom_profile.json
+
+# Edit the file
+vim my_custom_profile.json
+
+# Test the profile
+./scripts/test_profile.sh my_custom_profile.json
+
+# Apply the profile
+./scripts/apply_profile.sh my_custom_profile.json
+
+4. Validating Profiles
+bash
+
+# Validate JSON format
+python3 -m json.tool home_assistant_profile.json
+
+# Validate against schema
+./scripts/validate_profile.py --schema schema.json --profile home_assistant_profile.json
+
+5. Generating Reports
+bash
+
+# Generate profile report
+./scripts/profile_report.sh --profile home_assistant_profile.json --format html
+
+# Compare profiles
+./scripts/compare_profiles.sh home_assistant_profile.json nvr_profile.json
+
+

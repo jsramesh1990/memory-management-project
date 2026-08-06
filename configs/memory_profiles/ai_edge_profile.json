@@ -1,0 +1,269 @@
+{
+  "profile": {
+    "name": "AI Edge Computing",
+    "version": "1.0.0",
+    "description": "Optimized memory configuration for AI/ML edge computing workloads",
+    "target_use_case": "Artificial Intelligence & Machine Learning",
+    "created_date": "2024-08-06",
+    "author": "Sebastian"
+  },
+  
+  "system_overview": {
+    "total_ram_mb": 4096,
+    "reserved_memory_mb": 512,
+    "available_system_memory_mb": 3584,
+    "swap_enabled": false,
+    "swap_size_mb": 0,
+    "memory_governor": "performance"
+  },
+  
+  "memory_partitioning": {
+    "bootloader": {
+      "size_mb": 16,
+      "description": "U-Boot SPL and proper"
+    },
+    "kernel": {
+      "size_mb": 224,
+      "description": "Linux kernel image"
+    },
+    "device_tree": {
+      "size_mb": 16,
+      "description": "Device tree blobs"
+    },
+    "reserved": {
+      "size_mb": 240,
+      "description": "System reserved memory"
+    },
+    "npu_memory": {
+      "size_mb": 512,
+      "description": "NPU dedicated memory pool"
+    },
+    "gpu_memory": {
+      "size_mb": 128,
+      "description": "GPU frame buffers"
+    },
+    "vpu_memory": {
+      "size_mb": 128,
+      "description": "VPU/camera CMA buffers"
+    },
+    "system_ram": {
+      "size_mb": 1024,
+      "description": "General system memory"
+    },
+    "model_storage": {
+      "size_mb": 1024,
+      "description": "AI model storage and cache"
+    },
+    "inference_buffers": {
+      "size_mb": 512,
+      "description": "Input/output inference buffers"
+    }
+  },
+  
+  "ai_workloads": {
+    "inference_pipeline": {
+      "concurrent_models": 5,
+      "batch_size": 1,
+      "priority": "real_time"
+    },
+    "model_training": {
+      "enabled": false,
+      "memory_required_mb": 2048,
+      "batch_size": 16
+    },
+    "model_conversion": {
+      "enabled": true,
+      "memory_required_mb": 1024,
+      "framework": "RKNN"
+    },
+    "quantization": {
+      "enabled": true,
+      "precision": "INT8",
+      "calibration_dataset": true
+    }
+  },
+  
+  "npu_configuration": {
+    "enabled": true,
+    "memory_pool_mb": 512,
+    "model_storage_mb": 256,
+    "input_buffers_mb": 64,
+    "output_buffers_mb": 64,
+    "scratch_space_mb": 128,
+    "models": [
+      {
+        "name": "Vision Model",
+        "type": "YOLOv5",
+        "format": "RKNN",
+        "memory_mb": 128,
+        "performance_tops": 1.2,
+        "use_case": "object_detection"
+      },
+      {
+        "name": "Vision Model - Small",
+        "type": "MobileNetV3",
+        "format": "RKNN",
+        "memory_mb": 64,
+        "performance_tops": 0.8,
+        "use_case": "image_classification"
+      },
+      {
+        "name": "Language Model",
+        "type": "BERT-Tiny",
+        "format": "RKNN",
+        "memory_mb": 128,
+        "performance_tops": 0.6,
+        "use_case": "nlp"
+      },
+      {
+        "name": "Audio Model",
+        "type": "Speech-to-Text",
+        "format": "RKNN",
+        "memory_mb": 96,
+        "performance_tops": 0.4,
+        "use_case": "voice_recognition"
+      },
+      {
+        "name": "Anomaly Detection",
+        "type": "Autoencoder",
+        "format": "RKNN",
+        "memory_mb": 64,
+        "performance_tops": 0.3,
+        "use_case": "anomaly_detection"
+      }
+    ],
+    "model_caching": {
+      "enabled": true,
+      "cache_size_mb": 256,
+      "cache_strategy": "lru"
+    },
+    "inference_optimization": {
+      "batch_inference": true,
+      "async_inference": true,
+      "zero_copy": true,
+      "quantization": "INT8"
+    }
+  },
+  
+  "service_allocations": {
+    "inference_engine": {
+      "min_memory_mb": 256,
+      "max_memory_mb": 512,
+      "description": "Main inference engine"
+    },
+    "model_loader": {
+      "min_memory_mb": 128,
+      "max_memory_mb": 256,
+      "description": "Model loading and management"
+    },
+    "preprocessing": {
+      "min_memory_mb": 128,
+      "max_memory_mb": 256,
+      "description": "Data preprocessing pipeline"
+    },
+    "postprocessing": {
+      "min_memory_mb": 128,
+      "max_memory_mb": 256,
+      "description": "Result postprocessing"
+    },
+    "result_broker": {
+      "min_memory_mb": 64,
+      "max_memory_mb": 128,
+      "description": "Result distribution"
+    },
+    "monitoring": {
+      "min_memory_mb": 64,
+      "max_memory_mb": 128,
+      "description": "Performance monitoring"
+    }
+  },
+  
+  "performance_tuning": {
+    "cpu_governor": "performance",
+    "memory_compaction": true,
+    "transparent_hugepages": true,
+    "swappiness": 0,
+    "dirty_ratio": 30,
+    "dirty_background_ratio": 15,
+    "cache_pressure": 150,
+    "oom_killer": false,
+    "memory_compression": true,
+    "cpu_affinity": true,
+    "isolated_cpus": "3"
+  },
+  
+  "io_scheduler": {
+    "type": "none",
+    "queue_depth": 128,
+    "readahead_kb": 4096
+  },
+  
+  "power_management": {
+    "dynamic_frequency_scaling": true,
+    "voltage_scaling": false,
+    "power_gating": false,
+    "suspend_to_ram": false,
+    "suspend_to_disk": false,
+    "fan_control": {
+      "enabled": true,
+      "temperature_threshold_1": 50,
+      "temperature_threshold_2": 60,
+      "temperature_threshold_3": 70
+    }
+  },
+  
+  "security": {
+    "memory_encryption": true,
+    "secure_memory_regions": true,
+    "trustzone": true,
+    "secure_boot": true,
+    "memory_protection": true,
+    "model_encryption": true,
+    "secure_inference": true
+  },
+  
+  "monitoring": {
+    "memory_usage_alert_threshold": 85,
+    "memory_usage_critical_threshold": 95,
+    "inference_latency_alert_ms": 100,
+    "model_load_time_alert_ms": 1000,
+    "logging_level": "debug",
+    "metrics_collection": true,
+    "metrics_retention_days": 7,
+    "performance_logging": true
+  },
+  
+  "recommended_hardware": {
+    "min_ram_gb": 4,
+    "recommended_ram_gb": 8,
+    "min_storage_gb": 32,
+    "recommended_storage_gb": 64,
+    "storage_type": "NVMe SSD",
+    "network": "Gigabit Ethernet",
+    "cooling": "Active cooling recommended"
+  },
+  
+  "frameworks_support": {
+    "tensorflow_lite": true,
+    "pytorch": true,
+    "onnx": true,
+    "caffe": true,
+    "darknet": true,
+    "rknn": true
+  },
+  
+  "model_zoo": {
+    "local_path": "/opt/models",
+    "cloud_sync": true,
+    "auto_update": true,
+    "version_control": true
+  },
+  
+  "notes": [
+    "This profile is optimized for AI inference at the edge",
+    "NPU memory is maximized for multiple model loads",
+    "Swap is disabled for maximum performance",
+    "Recommended for vision, NLP, and audio AI workloads",
+    "Supports running 5+ models simultaneously"
+  ]
+}

@@ -1,0 +1,358 @@
+{
+  "version": "1.0.0",
+  "description": "Camera configuration for RK3568 NVR system",
+  "author": "Sebastian",
+  "date": "2024-08-06",
+  
+  "camera_defaults": {
+    "resolution_width": 1920,
+    "resolution_height": 1080,
+    "fps": 30,
+    "codec": "h264",
+    "bitrate": 2048,
+    "audio_enabled": true,
+    "audio_codec": "aac",
+    "stream_protocol": "rtsp",
+    "authentication": "digest"
+  },
+  
+  "cameras": [
+    {
+      "id": "front_door",
+      "name": "Front Door",
+      "location": "Front entrance",
+      "type": "outdoor",
+      "enabled": true,
+      "ip": "192.168.1.100",
+      "port": 554,
+      "rtsp_url": "rtsp://192.168.1.100:554/stream1",
+      "http_url": "http://192.168.1.100:8080/stream",
+      "manufacturer": "Hikvision",
+      "model": "DS-2CD2043G0-I",
+      "serial": "ABC123456",
+      
+      "stream_settings": {
+        "main_stream": {
+          "resolution": "1920x1080",
+          "fps": 30,
+          "bitrate": 4096,
+          "codec": "h264",
+          "profile": "high"
+        },
+        "sub_stream": {
+          "resolution": "640x480",
+          "fps": 15,
+          "bitrate": 512,
+          "codec": "h264",
+          "profile": "baseline"
+        }
+      },
+      
+      "detection_settings": {
+        "enabled": true,
+        "fps": 5,
+        "resolution": "640x480",
+        "confidence_threshold": 0.6,
+        "max_detections": 20,
+        "detection_interval": 3,
+        "tracking_enabled": true,
+        "tracking_max_gap": 25
+      },
+      
+      "recording_settings": {
+        "enabled": true,
+        "pre_capture": 5,
+        "post_capture": 10,
+        "retention_days": 30,
+        "continuous_recording": false,
+        "motion_recording": true,
+        "event_recording": true,
+        "quality": 80,
+        "record_audio": true,
+        "storage_path": "/media/recordings/front_door"
+      },
+      
+      "snapshot_settings": {
+        "enabled": true,
+        "quality": 80,
+        "timestamp": true,
+        "bounding_box": true,
+        "crop": true,
+        "retention_days": 30,
+        "storage_path": "/media/snapshots/front_door"
+      },
+      
+      "motion_settings": {
+        "enabled": true,
+        "sensitivity": 50,
+        "threshold": 30,
+        "area": 10,
+        "mask": [
+          {"x": 0, "y": 0, "width": 100, "height": 100},
+          {"x": 1820, "y": 0, "width": 100, "height": 100}
+        ],
+        "min_contour_area": 100,
+        "max_contour_area": 100000
+      },
+      
+      "zones": [
+        {
+          "id": "doorway",
+          "name": "Doorway Area",
+          "coordinates": [
+            [100, 200],
+            [400, 200],
+            [400, 600],
+            [100, 600]
+          ],
+          "loitering_time": 10
+        },
+        {
+          "id": "driveway",
+          "name": "Driveway Area",
+          "coordinates": [
+            [0, 700],
+            [1920, 700],
+            [1920, 1080],
+            [0, 1080]
+          ],
+          "loitering_time": 20
+        }
+      ],
+      
+      "alerts": {
+        "enabled": true,
+        "person_detected": true,
+        "car_detected": true,
+        "package_detected": true,
+        "animal_detected": false,
+        "motion_detected": false,
+        "camera_offline": true,
+        "storage_full": true,
+        "notification_methods": ["mqtt", "webhook", "email"],
+        "cooldown": 30
+      },
+      
+      "schedules": {
+        "recording": [
+          {"days": ["monday", "tuesday", "wednesday", "thursday", "friday"], "start": "00:00", "end": "23:59"},
+          {"days": ["saturday", "sunday"], "start": "00:00", "end": "23:59"}
+        ],
+        "detection": [
+          {"days": ["monday", "tuesday", "wednesday", "thursday", "friday"], "start": "06:00", "end": "22:00"},
+          {"days": ["saturday", "sunday"], "start": "00:00", "end": "23:59"}
+        ],
+        "alerts": [
+          {"days": ["monday", "tuesday", "wednesday", "thursday", "friday"], "start": "19:00", "end": "06:00"},
+          {"days": ["saturday", "sunday"], "start": "00:00", "end": "23:59"}
+        ]
+      }
+    },
+    
+    {
+      "id": "backyard",
+      "name": "Backyard",
+      "location": "Back of house",
+      "type": "outdoor",
+      "enabled": true,
+      "ip": "192.168.1.101",
+      "port": 554,
+      "rtsp_url": "rtsp://192.168.1.101:554/stream1",
+      "http_url": "http://192.168.1.101:8080/stream",
+      "manufacturer": "Reolink",
+      "model": "RLC-810A",
+      "serial": "DEF789012",
+      
+      "stream_settings": {
+        "main_stream": {
+          "resolution": "1920x1080",
+          "fps": 25,
+          "bitrate": 4096,
+          "codec": "h264"
+        },
+        "sub_stream": {
+          "resolution": "640x480",
+          "fps": 15,
+          "bitrate": 512,
+          "codec": "h264"
+        }
+      },
+      
+      "detection_settings": {
+        "enabled": true,
+        "fps": 5,
+        "resolution": "640x480",
+        "confidence_threshold": 0.6,
+        "max_detections": 20,
+        "detection_interval": 3
+      },
+      
+      "recording_settings": {
+        "enabled": true,
+        "pre_capture": 5,
+        "post_capture": 10,
+        "retention_days": 14,
+        "continuous_recording": false,
+        "motion_recording": true,
+        "event_recording": true,
+        "quality": 80,
+        "storage_path": "/media/recordings/backyard"
+      },
+      
+      "snapshot_settings": {
+        "enabled": true,
+        "quality": 80,
+        "timestamp": true,
+        "bounding_box": true,
+        "crop": true,
+        "retention_days": 14,
+        "storage_path": "/media/snapshots/backyard"
+      },
+      
+      "motion_settings": {
+        "enabled": true,
+        "sensitivity": 40,
+        "threshold": 30,
+        "area": 10,
+        "mask": [],
+        "min_contour_area": 100
+      },
+      
+      "zones": [
+        {
+          "id": "yard",
+          "name": "Yard Area",
+          "coordinates": [
+            [0, 0],
+            [1920, 0],
+            [1920, 1080],
+            [0, 1080]
+          ],
+          "loitering_time": 15
+        }
+      ],
+      
+      "alerts": {
+        "enabled": true,
+        "person_detected": true,
+        "car_detected": true,
+        "animal_detected": true,
+        "notification_methods": ["mqtt", "webhook"],
+        "cooldown": 60
+      }
+    },
+    
+    {
+      "id": "garage",
+      "name": "Garage",
+      "location": "Garage interior",
+      "type": "indoor",
+      "enabled": true,
+      "ip": "192.168.1.102",
+      "port": 554,
+      "rtsp_url": "rtsp://192.168.1.102:554/stream1",
+      "http_url": "http://192.168.1.102:8080/stream",
+      "manufacturer": "Amcrest",
+      "model": "IP2M-841",
+      "serial": "GHI345678",
+      
+      "stream_settings": {
+        "main_stream": {
+          "resolution": "1920x1080",
+          "fps": 20,
+          "bitrate": 2048,
+          "codec": "h264"
+        },
+        "sub_stream": {
+          "resolution": "640x480",
+          "fps": 10,
+          "bitrate": 256,
+          "codec": "h264"
+        }
+      },
+      
+      "detection_settings": {
+        "enabled": true,
+        "fps": 3,
+        "resolution": "640x480",
+        "confidence_threshold": 0.6,
+        "max_detections": 10
+      },
+      
+      "recording_settings": {
+        "enabled": true,
+        "pre_capture": 3,
+        "post_capture": 5,
+        "retention_days": 7,
+        "continuous_recording": false,
+        "motion_recording": true,
+        "event_recording": true,
+        "quality": 75,
+        "storage_path": "/media/recordings/garage"
+      },
+      
+      "snapshot_settings": {
+        "enabled": true,
+        "quality": 75,
+        "timestamp": true,
+        "bounding_box": true,
+        "crop": true,
+        "retention_days": 7,
+        "storage_path": "/media/snapshots/garage"
+      },
+      
+      "motion_settings": {
+        "enabled": true,
+        "sensitivity": 60,
+        "threshold": 30,
+        "area": 10,
+        "mask": [],
+        "min_contour_area": 100
+      },
+      
+      "alerts": {
+        "enabled": true,
+        "person_detected": true,
+        "car_detected": true,
+        "package_detected": true,
+        "notification_methods": ["mqtt", "webhook"],
+        "cooldown": 30
+      }
+    }
+  ],
+  
+  "storage_settings": {
+    "total_capacity_gb": 1000,
+    "recording_retention_days": 30,
+    "snapshot_retention_days": 30,
+    "backup_enabled": true,
+    "backup_schedule": "0 3 * * *",
+    "storage_path": "/media/recordings",
+    "snapshot_path": "/media/snapshots",
+    "temp_path": "/tmp/nvr",
+    "alert_on_full": true,
+    "full_threshold_percent": 90
+  },
+  
+  "network_settings": {
+    "rtsp_port": 554,
+    "http_port": 80,
+    "https_port": 443,
+    "websocket_port": 8888,
+    "mqtt_port": 1883,
+    "max_connections": 50,
+    "connection_timeout": 30,
+    "buffer_size": 4096
+  },
+  
+  "notifications": {
+    "methods": ["mqtt", "webhook", "email"],
+    "mqtt_broker": "mqtt.local",
+    "mqtt_port": 1883,
+    "webhook_url": "http://homeassistant.local:8123/api/webhook/frigate",
+    "email_smtp": "smtp.gmail.com",
+    "email_smtp_port": 587,
+    "email_from": "nvr@example.com",
+    "email_to": ["user@example.com"]
+  }
+}

@@ -1,0 +1,77 @@
+# Dockerfile for Jupyter Notebook Environment
+# Data analysis and visualization for DDR memory management
+# Version: 1.0.0
+# Author: Sebastian
+
+# Use official Jupyter image
+FROM jupyter/datascience-notebook:latest
+
+# Set metadata
+LABEL maintainer="sebastian@example.com"
+LABEL description="Jupyter Notebook for RK3568 DDR Memory Analysis"
+LABEL version="1.0.0"
+
+# Install additional Python packages
+RUN pip install --no-cache-dir \
+    # Memory analysis
+    memory-profiler \
+    psutil \
+    # Data processing
+    dask \
+    vaex \
+    # Visualization
+    plotly \
+    bokeh \
+    altair \
+    # AI/ML
+    tensorflow \
+    torch \
+    onnx \
+    rknn-toolkit2 \
+    # System
+    pyyaml \
+    json5 \
+    # Utilities
+    tqdm \
+    click
+
+# Install system packages
+USER root
+RUN apt-get update && apt-get install -y \
+    # Memory tools
+    smem \
+    memstat \
+    # System monitoring
+    sysstat \
+    iotop \
+    iftop \
+    # Development
+    build-essential \
+    cmake \
+    git \
+    # Other
+    vim \
+    tmux \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Switch back to jovyan user
+USER jovyan
+
+# Set up Jupyter extensions
+RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager \
+    && jupyter labextension install plotlywidget \
+    && jupyter labextension install jupyterlab-plotly \
+    && jupyter labextension install @jupyterlab/toc
+
+# Create notebooks directory
+RUN mkdir -p /home/jovyan/notebooks
+
+# Copy example notebooks
+COPY --chown=jovyan:jovyan notebooks/ /home/jovyan/notebooks/
+
+# Set working directory
+WORKDIR /home/jovyan/notebooks
+
+# Default command
+CMD ["start-notebook.sh"]

@@ -1,0 +1,297 @@
+# Complete configuration example for RK3568 Home Assistant
+
+# ============================================================================
+# Basic Configuration
+# ============================================================================
+
+homeassistant:
+  name: "Smart Home"
+  latitude: 37.7749
+  longitude: -122.4194
+  elevation: 0
+  unit_system: imperial
+  time_zone: America/Los_Angeles
+  internal_url: "https://homeassistant.local:8123"
+  external_url: "https://homeassistant.example.com"
+
+# ============================================================================
+# HTTP Configuration
+# ============================================================================
+
+http:
+  server_host: 0.0.0.0
+  server_port: 8123
+  use_x_forwarded_for: true
+  trusted_proxies: []
+  ip_ban_enabled: true
+  login_attempts_threshold: 5
+
+# ============================================================================
+# Logging
+# ============================================================================
+
+logger:
+  default: info
+  logs:
+    homeassistant.components.rk3568_npu: debug
+    custom_components.rk3568_npu: debug
+
+# ============================================================================
+# System Health
+# ============================================================================
+
+system_health:
+  - server
+
+# ============================================================================
+# RK3568 NPU Integration
+# ============================================================================
+
+rk3568_npu:
+  # General settings
+  enable: true
+  
+  # Model settings
+  model_path: /config/models/yolov5.rknn
+  detection_threshold: 0.6
+  iou_threshold: 0.5
+  max_detections: 20
+  
+  # Performance settings
+  batch_size: 1
+  threads: 2
+  use_npu: true
+  
+  # Debug settings
+  debug: false
+  save_frames: false
+  frame_save_path: /config/media/detections
+
+# ============================================================================
+# Camera Integration
+# ============================================================================
+
+camera:
+  # Front Door Camera
+  - platform: generic
+    name: Front Door
+    still_image_url: http://192.168.1.100/stream
+    stream_source: rtsp://192.168.1.100/stream
+    framerate: 30
+    scan_interval: 1
+  
+  # Backyard Camera
+  - platform: generic
+    name: Backyard
+    still_image_url: http://192.168.1.101/stream
+    stream_source: rtsp://192.168.1.101/stream
+    framerate: 30
+    scan_interval: 1
+  
+  # Garage Camera
+  - platform: generic
+    name: Garage
+    still_image_url: http://192.168.1.102/stream
+    stream_source: rtsp://192.168.1.102/stream
+    framerate: 30
+    scan_interval: 1
+
+# ============================================================================
+# Frigate NVR Integration
+# ============================================================================
+
+frigate:
+  url: http://localhost:5000
+  
+  camera:
+    front_door:
+      enabled: true
+      fps: 5
+      width: 1920
+      height: 1080
+      
+      detection:
+        enabled: true
+        confidence: 0.7
+        mask: []
+        person: true
+        car: true
+        animal: true
+        package: true
+      
+      record:
+        enabled: true
+        pre_capture: 5
+        post_capture: 10
+        events:
+          - person
+          - car
+          - package
+      
+      snapshots:
+        enabled: true
+        quality: 80
+        crop: true
+
+# ============================================================================
+# Automations
+# ============================================================================
+
+automation:
+  # Person Detection Alert
+  - alias: "Person Detected at Front Door"
+    trigger:
+      platform: state
+      entity_id: binary_sensor.front_door_person
+      to: 'on'
+    action:
+      - service: notify.mobile_app
+        data:
+          title: "Person Detected"
+          message: "Someone is at the front door!"
+      - service: camera.snapshot
+        data:
+          entity_id: camera.front_door
+          filename: /media/front_door_{{ now().strftime('%Y%m%d_%H%M%S') }}.jpg
+    mode: single
+  
+  # Package Detection Alert
+  - alias: "Package Delivered"
+    trigger:
+      platform: state
+      entity_id: binary_sensor.front_door_package
+      to: 'on'
+    action:
+      - service: notify.mobile_app
+        data:
+          title: "📦 Package Delivered"
+          message: "A package has been delivered!"
+      - service: camera.snapshot
+        data:
+          entity_id: camera.front_door
+          filename: /media/package_{{ now().strftime('%Y%m%d_%H%M%S') }}.jpg
+    mode: single
+  
+  # Night Security
+  - alias: "Night Security - Person Detection"
+    trigger:
+      platform: state
+      entity_id: binary_sensor.front_door_person
+      to: 'on'
+    condition:
+      condition: sun
+      after: sunset
+      before: sunrise
+    action:
+      - service: light.turn_on
+        data:
+          entity_id: light.front_door_light
+          brightness: 255
+      - service: notify.mobile_app
+        data:
+          title: "⚠️ Motion Detected"
+          message: "Someone is at the front door at night!"
+    mode: single
+
+# ============================================================================
+# Scripts
+# ============================================================================
+
+script:
+  record_front_door:
+    alias: "Record Front Door"
+    sequence:
+      - service: camera.record
+        data:
+          entity_id: camera.front_door
+          duration: 30
+          filename: /media/front_door_{{ now().strftime('%Y%m%d_%H%M%S') }}.mp4
+  
+  announce_person:
+    alias: "Announce Person"
+    sequence:
+      - service: tts.google_translate_say
+        data:
+          entity_id: media_player.speaker
+          message: "A person has been detected at the front door"
+
+# ============================================================================
+# Sensors
+# ============================================================================
+
+sensor:
+  # NPU Performance
+  - platform: rk3568_npu
+    type: performance
+    name: NPU Performance
+  
+  - platform: rk3568_npu
+    type: memory
+    name: NPU Memory Usage
+  
+  # System Information
+  - platform: systemmonitor
+    resources:
+      - type: memory_use_percent
+      - type: processor_use
+      - type: temperature
+      - type: load_1m
+
+# ============================================================================
+# Binary Sensors
+# ============================================================================
+
+binary_sensor:
+  # Detection Results
+  - platform: rk3568_npu
+    type: person_detection
+    name: Person Detected
+  
+  - platform: rk3568_npu
+    type: package_detection
+    name: Package Detected
+  
+  - platform: rk3568_npu
+    type: vehicle_detection
+    name: Vehicle Detected
+
+# ============================================================================
+# Switch
+# ============================================================================
+
+switch:
+  # NPU Control
+  - platform: rk3568_npu
+    type: enable_detection
+    name: Enable Detection
+  
+  - platform: rk3568_npu
+    type: enable_recording
+    name: Enable Recording
+
+# ============================================================================
+# Lovelace Configuration
+# ============================================================================
+
+lovelace:
+  mode: storage
+  resources: []
+
+# ============================================================================
+# Custom Components
+# ============================================================================
+
+custom_components:
+  - folder: /config/custom_components
+    include:
+      - rk3568_npu
+      - frigate
+
+# ============================================================================
+# Media Directory
+# ============================================================================
+
+media_dirs:
+  media: /media
+  recordings: /media/recordings
+  snapshots: /media/snapshots

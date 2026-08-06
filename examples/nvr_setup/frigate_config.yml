@@ -1,0 +1,568 @@
+# Frigate NVR Configuration for RK3568
+# Optimized for NPU acceleration and AI detection
+# Version: 1.0.0
+# Author: Sebastian
+# Date: 2024-08-06
+
+# ============================================================================
+# General Configuration
+# ============================================================================
+
+mqtt:
+  enabled: true
+  host: mqtt.local
+  port: 1883
+  user: frigate
+  password: frigate
+  topic_prefix: frigate
+  client_id: frigate
+  stats_interval: 60
+
+# ============================================================================
+# Database Configuration
+# ============================================================================
+
+database:
+  path: /config/frigate.db
+  retain_days: 30
+  enabled: true
+
+# ============================================================================
+# Logger Configuration
+# ============================================================================
+
+logger:
+  default: info
+  logs:
+    frigate.detectors.rk3568: debug
+    frigate.events: info
+    frigate.record: info
+    frigate.video: info
+
+# ============================================================================
+# Detector Configuration - RK3568 NPU
+# ============================================================================
+
+detectors:
+  rk3568:
+    type: rknn
+    device: npu
+    model_path: /config/models/yolov5.rknn
+    num_threads: 2
+    enabled: true
+
+# ============================================================================
+# Go2RTC Configuration (RTSP Stream Manager)
+# ============================================================================
+
+go2rtc:
+  streams:
+    front_door:
+      - rtsp://admin:password@192.168.1.100:554/stream1
+      - "ffmpeg:http://192.168.1.100:8080/stream#video=h264#audio=opus"
+    backyard:
+      - rtsp://admin:password@192.168.1.101:554/stream1
+      - "ffmpeg:http://192.168.1.101:8080/stream#video=h264#audio=opus"
+    garage:
+      - rtsp://admin:password@192.168.1.102:554/stream1
+      - "ffmpeg:http://192.168.1.102:8080/stream#video=h264#audio=opus"
+    driveway:
+      - rtsp://admin:password@192.168.1.103:554/stream1
+      - "ffmpeg:http://192.168.1.103:8080/stream#video=h264#audio=opus"
+    living_room:
+      - rtsp://admin:password@192.168.1.104:554/stream1
+      - "ffmpeg:http://192.168.1.104:8080/stream#video=h264#audio=opus"
+
+# ============================================================================
+# Birdseye Configuration (Overview)
+# ============================================================================
+
+birdseye:
+  enabled: true
+  mode: continuous
+  width: 1920
+  height: 1080
+  quality: 80
+  fps: 5
+
+# ============================================================================
+# Camera Configuration
+# ============================================================================
+
+cameras:
+  # Front Door Camera
+  front_door:
+    enabled: true
+    name: Front Door
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/front_door
+          roles:
+            - detect
+            - record
+            - audio
+      output_args:
+        record: -f segment -segment_time 10 -segment_format_options movflags=+faststart+empty_moov -reset_timestamps 1 -strftime 1 -c copy
+    live:
+      quality: 80
+      height: 1080
+      fps: 15
+    
+    # Detection Configuration
+    detect:
+      enabled: true
+      fps: 5
+      width: 640
+      height: 480
+      max_disappeared: 25
+    
+    # Object Tracking
+    objects:
+      track:
+        - person
+        - car
+        - package
+        - animal
+        - bicycle
+        - motorcycle
+      filters:
+        person:
+          min_score: 0.5
+          threshold: 0.7
+          mask: []
+        car:
+          min_score: 0.5
+          threshold: 0.6
+          mask: []
+        package:
+          min_score: 0.4
+          threshold: 0.6
+          mask: []
+        animal:
+          min_score: 0.4
+          threshold: 0.6
+          mask: []
+    
+    # Recording Configuration
+    record:
+      enabled: true
+      retain_days: 30
+      events:
+        retain:
+          default: 30
+          mode: motion
+        pre_capture: 5
+        post_capture: 10
+        objects:
+          - person
+          - car
+          - package
+        required_zones: []
+        quality: 80
+    
+    # Snapshot Configuration
+    snapshots:
+      enabled: true
+      clean_copy: true
+      timestamp: true
+      bounding_box: true
+      crop: true
+      height: 1080
+      quality: 80
+      retain:
+        default: 30
+    
+    # Motion Detection
+    motion:
+      mask: []
+      threshold: 30
+      contour_area: 10
+      delta_alpha: 0.2
+      frame_alpha: 0.2
+      frame_height: 50
+    
+    # Zones
+    zones:
+      doorway:
+        coordinates: 0.1,0.1,0.9,0.1,0.9,0.9,0.1,0.9
+        loitering_time: 10
+      driveway:
+        coordinates: 0.1,0.7,0.9,0.7,0.9,1.0,0.1,1.0
+        loitering_time: 20
+    
+    # Review Configuration
+    review:
+      alerts:
+        required_zones:
+          - doorway
+          - driveway
+        required_objects:
+          - person
+          - car
+          - package
+      detections:
+        required_zones:
+          - doorway
+        required_objects:
+          - person
+
+  # Backyard Camera
+  backyard:
+    enabled: true
+    name: Backyard
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/backyard
+          roles:
+            - detect
+            - record
+    detect:
+      enabled: true
+      fps: 5
+      width: 640
+      height: 480
+    objects:
+      track:
+        - person
+        - animal
+        - car
+      filters:
+        person:
+          min_score: 0.5
+          threshold: 0.7
+        animal:
+          min_score: 0.4
+          threshold: 0.6
+        car:
+          min_score: 0.5
+          threshold: 0.6
+    record:
+      enabled: true
+      retain_days: 14
+      events:
+        pre_capture: 5
+        post_capture: 10
+        objects:
+          - person
+          - animal
+          - car
+    snapshots:
+      enabled: true
+      clean_copy: true
+      timestamp: true
+      bounding_box: true
+      crop: true
+      height: 1080
+      quality: 80
+    motion:
+      mask: []
+      threshold: 30
+
+  # Garage Camera
+  garage:
+    enabled: true
+    name: Garage
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/garage
+          roles:
+            - detect
+            - record
+    detect:
+      enabled: true
+      fps: 5
+      width: 640
+      height: 480
+    objects:
+      track:
+        - person
+        - car
+        - package
+      filters:
+        person:
+          min_score: 0.5
+          threshold: 0.7
+        car:
+          min_score: 0.5
+          threshold: 0.6
+        package:
+          min_score: 0.4
+          threshold: 0.6
+    record:
+      enabled: true
+      retain_days: 14
+      events:
+        pre_capture: 5
+        post_capture: 10
+        objects:
+          - person
+          - car
+          - package
+    snapshots:
+      enabled: true
+      clean_copy: true
+      timestamp: true
+      bounding_box: true
+      crop: true
+      height: 1080
+      quality: 80
+
+  # Driveway Camera
+  driveway:
+    enabled: true
+    name: Driveway
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/driveway
+          roles:
+            - detect
+            - record
+    detect:
+      enabled: true
+      fps: 5
+      width: 640
+      height: 480
+    objects:
+      track:
+        - person
+        - car
+        - bicycle
+        - motorcycle
+      filters:
+        person:
+          min_score: 0.5
+          threshold: 0.7
+        car:
+          min_score: 0.5
+          threshold: 0.6
+    record:
+      enabled: true
+      retain_days: 14
+      events:
+        pre_capture: 5
+        post_capture: 10
+        objects:
+          - person
+          - car
+    snapshots:
+      enabled: true
+      clean_copy: true
+      timestamp: true
+      bounding_box: true
+      crop: true
+      height: 1080
+      quality: 80
+
+  # Living Room (Indoor)
+  living_room:
+    enabled: true
+    name: Living Room
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:8554/living_room
+          roles:
+            - detect
+            - record
+            - audio
+    detect:
+      enabled: true
+      fps: 5
+      width: 640
+      height: 480
+    objects:
+      track:
+        - person
+        - animal
+      filters:
+        person:
+          min_score: 0.5
+          threshold: 0.7
+        animal:
+          min_score: 0.4
+          threshold: 0.6
+    record:
+      enabled: true
+      retain_days: 7
+      events:
+        pre_capture: 5
+        post_capture: 10
+        objects:
+          - person
+          - animal
+    snapshots:
+      enabled: true
+      clean_copy: true
+      timestamp: true
+      bounding_box: true
+      crop: true
+      height: 1080
+      quality: 80
+
+# ============================================================================
+# Storage Configuration
+# ============================================================================
+
+storage:
+  # Main storage configuration
+  main:
+    path: /media/frigate/recordings
+    size: 500GB
+    enabled: true
+    type: hdd
+  
+  # Backup storage
+  backup:
+    path: /media/frigate/backup
+    size: 100GB
+    enabled: true
+    type: hdd
+
+  # Temporary storage for processing
+  temp:
+    path: /tmp/frigate
+    size: 10GB
+    enabled: true
+    type: ram
+
+# ============================================================================
+# Notification Configuration
+# ============================================================================
+
+notifications:
+  # MQTT notifications
+  mqtt:
+    enabled: true
+    topic: frigate/events
+    
+  # Webhook notifications
+  webhook:
+    enabled: true
+    url: http://homeassistant.local:8123/api/webhook/frigate_events
+    headers:
+      Content-Type: application/json
+    
+  # Email notifications
+  email:
+    enabled: false
+    smtp_host: smtp.gmail.com
+    smtp_port: 587
+    smtp_user: admin@example.com
+    smtp_password: password
+    from: frigate@example.com
+    to:
+      - user1@example.com
+      - user2@example.com
+
+# ============================================================================
+# UI Configuration
+# ============================================================================
+
+ui:
+  enabled: true
+  port: 5000
+  theme: dark
+  language: en
+  timezone: America/Los_Angeles
+  
+  # Camera layout
+  layout:
+    mode: grid
+    columns: 4
+    row_height: 200
+  
+  # Camera defaults
+  defaults:
+    live:
+      quality: 80
+      fps: 15
+    timeline:
+      zoom: 1h
+      show_labels: true
+
+# ============================================================================
+# Performance Tuning
+# ============================================================================
+
+performance:
+  # NPU Optimization
+  npu:
+    threads: 2
+    batch_size: 1
+    model_optimization: true
+    
+  # Video Processing
+  video:
+    decode_workers: 2
+    encode_workers: 2
+    max_connections: 10
+    
+  # Database
+  database:
+    cache_size: 256MB
+    journal_mode: WAL
+    synchronous: NORMAL
+    
+  # Network
+  network:
+    buffer_size: 4096
+    timeout: 30
+    retry_attempts: 3
+
+# ============================================================================
+# Debug Configuration
+# ============================================================================
+
+debug:
+  enabled: false
+  log_level: debug
+  save_frames: false
+  save_path: /media/frigate/debug
+  max_saved_frames: 100
+  
+  # Profiling
+  profiling:
+    enabled: false
+    interval: 60
+    save_path: /media/frigate/profiling
+
+# ============================================================================
+# Security Configuration
+# ============================================================================
+
+security:
+  # Authentication
+  auth:
+    enabled: true
+    users:
+      admin:
+        password: admin_password_hash
+        roles: [admin]
+      user:
+        password: user_password_hash
+        roles: [viewer]
+  
+  # SSL/TLS
+  ssl:
+    enabled: false
+    certificate: /ssl/cert.pem
+    key: /ssl/key.pem
+  
+  # IP Whitelist
+  ip_whitelist:
+    - 192.168.1.0/24
+    - localhost
+
+# ============================================================================
+# Backup Configuration
+# ============================================================================
+
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  retention: 7
+  compression: true
+  path: /media/frigate/backup
+  include:
+    - database
+    - config
+    - recordings

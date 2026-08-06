@@ -1,0 +1,243 @@
+{
+  "profile": {
+    "name": "Maximum Performance",
+    "version": "1.0.0",
+    "description": "Optimized memory configuration for maximum system performance",
+    "target_use_case": "General High-Performance Computing",
+    "created_date": "2024-08-06",
+    "author": "Sebastian"
+  },
+  
+  "system_overview": {
+    "total_ram_mb": 8192,
+    "reserved_memory_mb": 512,
+    "available_system_memory_mb": 7680,
+    "swap_enabled": false,
+    "swap_size_mb": 0,
+    "memory_governor": "performance"
+  },
+  
+  "memory_partitioning": {
+    "bootloader": {
+      "size_mb": 16,
+      "description": "U-Boot SPL and proper"
+    },
+    "kernel": {
+      "size_mb": 224,
+      "description": "Linux kernel image"
+    },
+    "device_tree": {
+      "size_mb": 16,
+      "description": "Device tree blobs"
+    },
+    "reserved": {
+      "size_mb": 240,
+      "description": "System reserved memory"
+    },
+    "npu_memory": {
+      "size_mb": 512,
+      "description": "NPU dedicated memory pool"
+    },
+    "gpu_memory": {
+      "size_mb": 256,
+      "description": "GPU frame buffers"
+    },
+    "vpu_memory": {
+      "size_mb": 512,
+      "description": "VPU/camera CMA buffers"
+    },
+    "system_ram": {
+      "size_mb": 4096,
+      "description": "General system memory"
+    },
+    "performance_cache": {
+      "size_mb": 2048,
+      "description": "High-performance cache buffer"
+    }
+  },
+  
+  "performance_configuration": {
+    "cpu_governor": "performance",
+    "cpu_max_frequency_mhz": 2000,
+    "cpu_min_frequency_mhz": 2000,
+    "gpu_max_frequency_mhz": 800,
+    "gpu_min_frequency_mhz": 800,
+    "npu_max_frequency_mhz": 1000,
+    "npu_min_frequency_mhz": 1000,
+    "memory_frequency_mhz": 2133,
+    "memory_timings": {
+      "tCL": 18,
+      "tRCD": 18,
+      "tRP": 18,
+      "tRAS": 42,
+      "tRFC": 350,
+      "tRRD": 4,
+      "tWTR": 4
+    },
+    "memory_interleaving": {
+      "enabled": true,
+      "channels": 2,
+      "banks": 8
+    }
+  },
+  
+  "service_allocations": {
+    "kernel_buffers": {
+      "min_memory_mb": 1024,
+      "max_memory_mb": 2048,
+      "description": "Kernel and low-level buffers"
+    },
+    "disk_cache": {
+      "min_memory_mb": 2048,
+      "max_memory_mb": 4096,
+      "description": "Aggressive disk caching"
+    },
+    "application_buffer": {
+      "min_memory_mb": 1024,
+      "max_memory_mb": 2048,
+      "description": "Application memory buffer"
+    },
+    "network_buffer": {
+      "min_memory_mb": 256,
+      "max_memory_mb": 512,
+      "description": "Network packet buffers"
+    },
+    "tmpfs": {
+      "min_memory_mb": 512,
+      "max_memory_mb": 1024,
+      "description": "Temporary filesystem"
+    }
+  },
+  
+  "performance_tuning": {
+    "cpu_governor": "performance",
+    "memory_compaction": true,
+    "transparent_hugepages": true,
+    "swappiness": 0,
+    "dirty_ratio": 50,
+    "dirty_background_ratio": 25,
+    "cache_pressure": 200,
+    "oom_killer": false,
+    "memory_compression": false,
+    "cpu_affinity": true,
+    "isolated_cpus": "2,3",
+    "preempt": "full",
+    "timers_slack": 1
+  },
+  
+  "io_scheduler": {
+    "type": "none",
+    "queue_depth": 512,
+    "readahead_kb": 8192,
+    "write_cache": true,
+    "discard": false,
+    "rotational": false
+  },
+  
+  "filesystem": {
+    "mount_options": {
+      "noatime": true,
+      "nodiratime": true,
+      "data": "ordered",
+      "barrier": 0,
+      "commit": 60
+    },
+    "journal": {
+      "enabled": true,
+      "mode": "writeback",
+      "size_mb": 256
+    }
+  },
+  
+  "network": {
+    "buffer_size": {
+      "rmem_max": 16777216,
+      "wmem_max": 16777216,
+      "rmem_default": 4194304,
+      "wmem_default": 4194304
+    },
+    "tcp": {
+      "congestion_control": "bbr",
+      "fastopen": 3,
+      "syncookies": 0
+    },
+    "interrupts": {
+      "coalescing": true,
+      "usecs": 100,
+      "max_frames": 8
+    }
+  },
+  
+  "power_management": {
+    "dynamic_frequency_scaling": false,
+    "voltage_scaling": false,
+    "power_gating": false,
+    "suspend_to_ram": false,
+    "suspend_to_disk": false,
+    "fan_control": {
+      "enabled": true,
+      "temperature_threshold_1": 45,
+      "temperature_threshold_2": 55,
+      "temperature_threshold_3": 65,
+      "max_speed": true
+    }
+  },
+  
+  "security": {
+    "memory_encryption": false,
+    "secure_memory_regions": false,
+    "trustzone": false,
+    "secure_boot": true,
+    "memory_protection": true
+  },
+  
+  "monitoring": {
+    "memory_usage_alert_threshold": 90,
+    "memory_usage_critical_threshold": 95,
+    "cpu_usage_alert_threshold": 90,
+    "temperature_alert_threshold": 70,
+    "logging_level": "error",
+    "metrics_collection": true,
+    "metrics_retention_days": 1,
+    "performance_counters": true
+  },
+  
+  "recommended_hardware": {
+    "min_ram_gb": 4,
+    "recommended_ram_gb": 8,
+    "min_storage_gb": 32,
+    "recommended_storage_gb": 64,
+    "storage_type": "NVMe SSD",
+    "network": "Gigabit Ethernet or faster",
+    "cooling": "Active cooling required"
+  },
+  
+  "use_cases": [
+    "High-performance computing",
+    "Real-time processing",
+    "Gaming/Graphics",
+    "AI/ML training",
+    "Data analytics",
+    "Scientific computing",
+    "Video editing/rendering"
+  ],
+  
+  "notes": [
+    "This profile prioritizes performance over power efficiency",
+    "All frequencies are locked at maximum",
+    "Swap is disabled for maximum speed",
+    "Aggressive caching for disk I/O",
+    "Recommended for short duration, high-intensity workloads",
+    "Monitor temperatures closely",
+    "Not recommended for battery-powered devices"
+  ],
+  
+  "performance_expectations": {
+    "memory_bandwidth_read_gbps": 22.4,
+    "memory_bandwidth_write_gbps": 19.8,
+    "npu_performance_tops": 1.8,
+    "gpu_performance_gflops": 120,
+    "storage_iops": 500000,
+    "network_throughput_gbps": 2.5
+  }
+}

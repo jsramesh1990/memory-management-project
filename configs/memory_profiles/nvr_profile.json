@@ -1,0 +1,281 @@
+{
+  "profile": {
+    "name": "NVR Security System",
+    "version": "1.0.0",
+    "description": "Optimized memory configuration for Network Video Recorder with AI detection",
+    "target_use_case": "Security & Surveillance",
+    "created_date": "2024-08-06",
+    "author": "Sebastian"
+  },
+  
+  "system_overview": {
+    "total_ram_mb": 8192,
+    "reserved_memory_mb": 1024,
+    "available_system_memory_mb": 7168,
+    "swap_enabled": true,
+    "swap_size_mb": 4096,
+    "memory_governor": "performance"
+  },
+  
+  "memory_partitioning": {
+    "bootloader": {
+      "size_mb": 16,
+      "description": "U-Boot SPL and proper"
+    },
+    "kernel": {
+      "size_mb": 224,
+      "description": "Linux kernel image"
+    },
+    "device_tree": {
+      "size_mb": 16,
+      "description": "Device tree blobs"
+    },
+    "reserved": {
+      "size_mb": 240,
+      "description": "System reserved memory"
+    },
+    "npu_memory": {
+      "size_mb": 256,
+      "description": "NPU dedicated memory pool"
+    },
+    "gpu_memory": {
+      "size_mb": 128,
+      "description": "GPU frame buffers"
+    },
+    "vpu_memory": {
+      "size_mb": 512,
+      "description": "VPU/camera CMA buffers"
+    },
+    "system_ram": {
+      "size_mb": 5120,
+      "description": "General system memory"
+    },
+    "recording_buffer": {
+      "size_mb": 2048,
+      "description": "Ring buffer for video recordings"
+    }
+  },
+  
+  "video_configuration": {
+    "cameras": {
+      "max_cameras": 16,
+      "recommended_cameras": 8,
+      "resolutions": {
+        "1080p": {
+          "bitrate_mbps": 2.5,
+          "fps": 30,
+          "buffer_mb": 64
+        },
+        "4K": {
+          "bitrate_mbps": 8.0,
+          "fps": 15,
+          "buffer_mb": 128
+        }
+      }
+    },
+    "codecs": {
+      "h264": {
+        "enabled": true,
+        "hardware_acceleration": true
+      },
+      "h265": {
+        "enabled": true,
+        "hardware_acceleration": true
+      },
+      "vp9": {
+        "enabled": false,
+        "hardware_acceleration": false
+      }
+    },
+    "recording": {
+      "continuous_recording": true,
+      "motion_recording": true,
+      "ai_event_recording": true,
+      "pre_record_seconds": 10,
+      "post_record_seconds": 30
+    },
+    "storage": {
+      "storage_type": "hdd",
+      "min_storage_gb": 500,
+      "recommended_storage_gb": 2000,
+      "retention_days": 30,
+      "overwrite_old": true,
+      "compression": true
+    }
+  },
+  
+  "service_allocations": {
+    "frigate_nvr": {
+      "min_memory_mb": 1024,
+      "max_memory_mb": 2048,
+      "description": "Frigate NVR core service"
+    },
+    "detect_process": {
+      "min_memory_mb": 512,
+      "max_memory_mb": 1024,
+      "description": "Object detection process"
+    },
+    "record_process": {
+      "min_memory_mb": 1024,
+      "max_memory_mb": 2048,
+      "description": "Recording process"
+    },
+    "mqtt_broker": {
+      "min_memory_mb": 128,
+      "max_memory_mb": 256,
+      "description": "MQTT for event notifications"
+    },
+    "web_server": {
+      "min_memory_mb": 256,
+      "max_memory_mb": 512,
+      "description": "Web UI and API"
+    },
+    "db_management": {
+      "min_memory_mb": 512,
+      "max_memory_mb": 1024,
+      "description": "Database operations"
+    }
+  },
+  
+  "npu_configuration": {
+    "enabled": true,
+    "memory_pool_mb": 256,
+    "model_storage_mb": 128,
+    "input_buffers_mb": 32,
+    "output_buffers_mb": 32,
+    "scratch_space_mb": 64,
+    "detection_models": [
+      {
+        "name": "YOLOv5 Person Detection",
+        "model": "yolov5_person",
+        "memory_required_mb": 64,
+        "inference_time_ms": 33,
+        "accuracy": "high",
+        "priority": "critical"
+      },
+      {
+        "name": "Vehicle Detection",
+        "model": "yolov5_vehicle",
+        "memory_required_mb": 48,
+        "inference_time_ms": 25,
+        "accuracy": "high",
+        "priority": "high"
+      },
+      {
+        "name": "Animal Detection",
+        "model": "animal_detection",
+        "memory_required_mb": 32,
+        "inference_time_ms": 20,
+        "accuracy": "medium",
+        "priority": "low"
+      },
+      {
+        "name": "Facial Recognition",
+        "model": "facenet",
+        "memory_required_mb": 64,
+        "inference_time_ms": 40,
+        "accuracy": "very_high",
+        "priority": "medium"
+      }
+    ],
+    "detection_settings": {
+      "min_confidence": 0.6,
+      "max_detections_per_frame": 20,
+      "detection_interval_frames": 3,
+      "motion_detection": true,
+      "object_tracking": true
+    }
+  },
+  
+  "performance_tuning": {
+    "cpu_governor": "performance",
+    "memory_compaction": true,
+    "transparent_hugepages": false,
+    "swappiness": 5,
+    "dirty_ratio": 15,
+    "dirty_background_ratio": 5,
+    "cache_pressure": 50,
+    "oom_killer": true,
+    "memory_compression": true,
+    "io_priority": "high"
+  },
+  
+  "io_scheduler": {
+    "type": "mq-deadline",
+    "queue_depth": 256,
+    "readahead_kb": 4096,
+    "write_cache": true
+  },
+  
+  "power_management": {
+    "dynamic_frequency_scaling": true,
+    "voltage_scaling": true,
+    "power_gating": true,
+    "suspend_to_ram": false,
+    "suspend_to_disk": false,
+    "fan_control": {
+      "enabled": true,
+      "temperature_threshold_1": 55,
+      "temperature_threshold_2": 65,
+      "temperature_threshold_3": 75
+    },
+    "drive_spindown_timeout": 30
+  },
+  
+  "security": {
+    "memory_encryption": true,
+    "secure_memory_regions": true,
+    "trustzone": true,
+    "secure_boot": true,
+    "memory_protection": true,
+    "video_encryption": true,
+    "secure_storage": true
+  },
+  
+  "monitoring": {
+    "memory_usage_alert_threshold": 80,
+    "memory_usage_critical_threshold": 90,
+    "cpu_usage_alert_threshold": 85,
+    "disk_usage_alert_threshold": 85,
+    "temperature_alert_threshold": 75,
+    "logging_level": "info",
+    "metrics_collection": true,
+    "metrics_retention_days": 90
+  },
+  
+  "alerting": {
+    "motion_detected": true,
+    "person_detected": true,
+    "vehicle_detected": true,
+    "camera_offline": true,
+    "disk_full": true,
+    "high_cpu": true,
+    "high_memory": true
+  },
+  
+  "recommended_hardware": {
+    "min_ram_gb": 4,
+    "recommended_ram_gb": 8,
+    "min_storage_gb": 500,
+    "recommended_storage_gb": 2000,
+    "network": "Gigabit Ethernet",
+    "storage_type": "SSD for OS, HDD for recordings",
+    "cameras": "IP cameras with RTSP",
+    "ups_recommended": true
+  },
+  
+  "compatibility": {
+    "frigate_version": "0.13.0+",
+    "rtsp_compatible": true,
+    "onvif_compatible": true,
+    "motion_detection": true
+  },
+  
+  "notes": [
+    "This profile is optimized for 24/7 security recording",
+    "AI detection runs on NPU for real-time alerts",
+    "Uses ring buffer for temporary storage before writing to disk",
+    "Recommended for 4-8 cameras at 1080p/4K",
+    "Enterprise-grade security features included"
+  ]
+}

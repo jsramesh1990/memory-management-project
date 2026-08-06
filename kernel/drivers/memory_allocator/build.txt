@@ -1,0 +1,28 @@
+# Create the memory allocator files
+cd ~/Projects/RK3568-DDR-Memory/kernel/drivers/memory_allocator/
+
+# Create files
+cat > dma_allocator.c << 'EOF'
+[Paste dma_allocator.c content]
+EOF
+
+cat > pool_manager.c << 'EOF'
+[Paste pool_manager.c content]
+EOF
+
+# Build the modules
+make
+
+# Load the modules
+sudo insmod dma_allocator.ko
+sudo insmod pool_manager.ko
+
+# Check if loaded
+lsmod | grep -E "dma_allocator|pool_manager"
+
+# View logs
+sudo dmesg | grep -E "DMA|Pool" | tail -20
+
+# Unload modules
+sudo rmmod pool_manager
+sudo rmmod dma_allocator

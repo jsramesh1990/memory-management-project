@@ -1,0 +1,53 @@
+How to Use These Scripts
+1. Make Scripts Executable
+bash
+
+# Make all scripts executable
+chmod +x docker/scripts/*.sh
+
+# Verify permissions
+ls -la docker/scripts/
+
+2. Enter Development Container
+bash
+
+# Enter container
+./docker/scripts/enter_container.sh
+
+# With specific container
+./docker/scripts/enter_container.sh -c my-dev-container
+
+# Force rebuild
+./docker/scripts/enter_container.sh --build
+
+3. Build the Project
+bash
+
+# Basic build
+./docker/scripts/build_in_container.sh
+
+# Clean build with tests
+./docker/scripts/build_in_container.sh --clean --test
+
+# Debug build with 4 jobs
+./docker/scripts/build_in_container.sh --type debug -j 4
+
+# Build and install
+./docker/scripts/build_in_container.sh --install
+
+# Build with documentation
+./docker/scripts/build_in_container.sh --docs
+
+4. Check Container Status
+bash
+
+# Check status
+./docker/scripts/status_container.sh
+
+# View logs
+./docker/scripts/logs_container.sh
+
+# Clean up
+./docker/scripts/clean_container.sh
+
+
