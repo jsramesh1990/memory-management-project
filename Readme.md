@@ -1,12 +1,7 @@
 # RK3568 DDR Memory Manager
 
-**Version:** 1.0.0  
-**Author:** Sebastian  
-**Status:** ✅ Stable Release
 
----
-
-## 📋 Table of Contents
+##  Table of Contents
 1. [Overview](#-overview)
 2. [Key Features](#-key-features)
 3. [Supported Hardware](#-supported-hardware)
@@ -26,7 +21,7 @@
 
 The **RK3568 DDR Memory Manager** is a comprehensive memory management solution for Rockchip RK3568-based systems. It provides optimized DDR configuration, NPU memory allocation, partition management, and performance monitoring for smart home hubs, NVR systems, AI edge computing, and custom embedded applications.
 
-### 🎯 Why RK3568 DDR Memory Manager?
+###  Why RK3568 DDR Memory Manager?
 
 | Challenge | Solution |
 |-----------|----------|
@@ -38,9 +33,9 @@ The **RK3568 DDR Memory Manager** is a comprehensive memory management solution 
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
-### 🧠 Core Features
+###  Core Features
 - ✅ **Automatic DDR Configuration** - Board-specific memory timing and layout
 - ✅ **NPU Memory Management** - Dedicated memory pools for AI workloads
 - ✅ **DMA Memory Allocation** - Contiguous memory for hardware acceleration
@@ -48,14 +43,14 @@ The **RK3568 DDR Memory Manager** is a comprehensive memory management solution 
 - ✅ **Performance Monitoring** - Real-time memory usage tracking
 - ✅ **Memory Pool Management** - Efficient allocation for different use cases
 
-### 🔧 Tools & Libraries
+###  Tools & Libraries
 - ✅ **DDR Info Tool** - Comprehensive system information
 - ✅ **Memory Monitor** - Real-time monitoring with ncurses interface
 - ✅ **Memory Benchmark** - Bandwidth, latency, and throughput testing
 - ✅ **DDR Manager Library** - User-space API for memory management
 - ✅ **Memory Utilities** - Debugging and analysis tools
 
-### 🏗️ System Integration
+###  System Integration
 - ✅ **Kernel Module** - Low-level device driver
 - ✅ **U-Boot Integration** - Early DDR initialization
 - ✅ **Device Tree Support** - Hardware description
@@ -64,7 +59,7 @@ The **RK3568 DDR Memory Manager** is a comprehensive memory management solution 
 
 ---
 
-## 🖥️ Supported Hardware
+##  Supported Hardware
 
 | Board | DDR Type | Memory | NPU | Status |
 |-------|----------|--------|-----|--------|
@@ -75,7 +70,7 @@ The **RK3568 DDR Memory Manager** is a comprehensive memory management solution 
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -114,9 +109,9 @@ The **RK3568 DDR Memory Manager** is a comprehensive memory management solution 
 
 ---
 
-## 📥 Installation
+##  Installation
 
-### 📋 Prerequisites
+###  Prerequisites
 
 ```bash
 # System Requirements
@@ -128,7 +123,7 @@ The **RK3568 DDR Memory Manager** is a comprehensive memory management solution 
 - 10GB+ free storage
 ```
 
-### 🔧 Quick Install
+###  Quick Install
 
 ```bash
 # Clone the repository
@@ -145,7 +140,7 @@ sudo ./scripts/deployment/install.sh --type full
 ddr_info_tool --info
 ```
 
-### 📦 Install Methods
+###  Install Methods
 
 | Method | Command | Description |
 |--------|---------|-------------|
@@ -156,7 +151,7 @@ ddr_info_tool --info
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### 1️⃣ Initialize DDR
 
@@ -259,9 +254,9 @@ make all
 
 ---
 
-## 💻 Examples
+##  Examples
 
-### 🏠 Home Assistant Integration
+###  Home Assistant Integration
 
 ```yaml
 # configuration.yaml
@@ -277,7 +272,7 @@ camera:
     stream_source: rtsp://192.168.1.100/stream
 ```
 
-### 📹 NVR Configuration
+###  NVR Configuration
 
 ```yaml
 # frigate_config.yml
